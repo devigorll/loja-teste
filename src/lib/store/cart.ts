@@ -13,6 +13,8 @@ type CartState = {
   add: (item: CartItem) => void;
   remove: (variantId: string) => void;
   setQty: (variantId: string, qty: number) => void;
+  /** Aplica dados atuais do banco. Itens que não estão em `rows` são removidos. */
+  sync: (rows: Record<string, { price: number; max: number }>) => void;
   clear: () => void;
 };
 
@@ -34,6 +36,15 @@ export const useCart = create<CartState>()(
       setQty: (id, qty) =>
         set((s) => ({
           items: s.items.map((i) => (i.variantId === id ? { ...i, qty: Math.max(1, Math.min(qty, i.max)) } : i)),
+        })),
+      sync: (rows) =>
+        set((s) => ({
+          items: s.items
+            .filter((i) => rows[i.variantId])
+            .map((i) => {
+              const r = rows[i.variantId];
+              return { ...i, price: r.price, max: r.max, qty: Math.min(i.qty, r.max) };
+            }),
         })),
       clear: () => set({ items: [] }),
     }),
