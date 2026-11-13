@@ -78,7 +78,7 @@ export function ProductPurchase({ product, image }: { product: Product; image: s
       </fieldset>
 
       <p className="text-sm text-neutral-500" aria-live="polite">
-        {stock === 0 ? "Esta combinação está esgotada." : stock <= (variant?.stock ? 3 : 0) ? `Restam apenas ${stock} unidades.` : `${stock} unidades disponíveis.`}
+        {stock === 0 ? "Esta combinação está esgotada." : stock <= 3 ? `Restam apenas ${stock} unidades.` : `${stock} unidades disponíveis.`}
       </p>
 
       <div className="flex items-center gap-4">

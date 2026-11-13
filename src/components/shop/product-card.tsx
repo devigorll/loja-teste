@@ -1,13 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
-import { basePrice, isSoldOut, mainImage, type Product } from "@/lib/catalog";
+import type { Product } from "@/lib/catalog";
+import { basePrice, isSoldOut, mainImage } from "@/lib/product-utils";
 import { formatBRL } from "@/lib/format";
 
 export function ProductCard({ product, priority = false }: { product: Product; priority?: boolean }) {
   const img = mainImage(product);
   const soldOut = isSoldOut(product);
   return (
-    <Link href={`/produto/${product.slug}`} className="group block">
+    <Link href={`/produto/${product.slug}`} className="group block rounded-xl transition-transform duration-200 active:scale-[0.98]">
       <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-900">
         {img && (
           <Image src={img} alt={product.name} fill priority={priority} unoptimized={img.endsWith(".svg")}
@@ -18,7 +19,7 @@ export function ProductCard({ product, priority = false }: { product: Product; p
         {!soldOut && product.promo_price && <span className="absolute left-3 top-3 rounded-full bg-red-600 px-3 py-1 text-xs font-semibold text-white">Promoção</span>}
       </div>
       <div className="mt-3 space-y-0.5">
-        <p className="font-semibold leading-snug">{product.name}</p>
+        <p className="font-semibold leading-snug transition group-hover:underline group-hover:underline-offset-4">{product.name}</p>
         <p className="text-sm text-neutral-500">{product.categories?.name}</p>
         <p className="pt-1 text-sm font-semibold">
           {formatBRL(basePrice(product))}

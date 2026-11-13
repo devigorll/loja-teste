@@ -37,7 +37,7 @@ export default async function ProductPage({ params }: Props) {
           <h1 className="mt-1 text-3xl font-black tracking-tight sm:text-4xl">{product.name}</h1>
           <p className="mt-4 max-w-prose text-neutral-600 dark:text-neutral-400">{product.description}</p>
           <div className="mt-8">
-            <ProductPurchase product={product} image={mainImage(product)} />
+            <ProductPurchase key={product.id} product={product} image={mainImage(product)} />
           </div>
         </div>
       </div>

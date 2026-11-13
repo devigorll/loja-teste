@@ -1,5 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 
+import { basePrice } from "@/lib/product-utils";
+export { basePrice, totalStock, isSoldOut, mainImage } from "@/lib/product-utils";
+
 export type Variant = {
   id: string; size: string; color: string; color_hex: string | null;
   stock: number; price_override: number | null; is_active: boolean;
@@ -23,12 +26,6 @@ export type Filters = {
 
 const SELECT =
   "id,name,slug,description,price,promo_price,is_featured,created_at,categories(name,slug),product_images(url,alt,position),product_variants(id,size,color,color_hex,stock,price_override,is_active)";
-
-export const basePrice = (p: Product) => p.promo_price ?? p.price;
-export const totalStock = (p: Product) => p.product_variants.reduce((s, v) => s + v.stock, 0);
-export const isSoldOut = (p: Product) => totalStock(p) === 0;
-export const mainImage = (p: Product) =>
-  [...p.product_images].sort((a, b) => a.position - b.position)[0]?.url ?? null;
 
 export async function getStore(): Promise<Store> {
   const supabase = await createClient();
