@@ -1,18 +1,26 @@
 import type { Metadata } from "next";
 import { requireStaff } from "@/lib/auth/require-staff";
-import { SignOutButton } from "@/components/admin/sign-out-button";
+import { createClient } from "@/lib/supabase/server";
+import { AdminShell } from "@/components/admin/admin-shell";
+import { NewOrderNotifier } from "@/components/admin/new-order-notifier";
 
 export const metadata: Metadata = { title: "Painel", robots: { index: false, follow: false } };
+export const dynamic = "force-dynamic";
 
 export default async function AdminPanelLayout({ children }: { children: React.ReactNode }) {
   const profile = await requireStaff();
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from("orders")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "awaiting_confirmation");
+
   return (
-    <div className="min-h-dvh">
-      <header className="flex items-center justify-between gap-3 border-b border-neutral-200 px-4 py-3 sm:px-6 dark:border-neutral-800">
-        <span className="truncate text-sm text-neutral-500">Logado como {profile.full_name} ({profile.role})</span>
-        <SignOutButton />
-      </header>
-      <main className="p-4 sm:p-6">{children}</main>
-    </div>
+    <>
+      <NewOrderNotifier />
+      <AdminShell name={profile.full_name} role={profile.role} pending={count ?? 0}>
+        {children}
+      </AdminShell>
+    </>
   );
 }
