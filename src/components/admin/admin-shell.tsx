@@ -28,7 +28,7 @@ function Badge({ n, className = "" }: { n: number; className?: string }) {
 function Brand() {
   return (
     <span className="flex items-center gap-2.5 font-black tracking-tight">
-      <span className="grid size-8 place-items-center rounded-lg bg-accent text-accent-ink"><Store size={17} /></span>
+      <span className="grid size-8 place-items-center rounded-lg bg-white text-black"><Store size={17} /></span>
       Painel
     </span>
   );
@@ -44,7 +44,7 @@ function SideNav({ pending, onNavigate }: { pending: number; onNavigate?: () => 
         const on = isActive(pathname, n);
         return (
           <Link key={n.href} href={n.href} onClick={onNavigate} aria-current={on ? "page" : undefined}
-            className={`${sideLink} ${on ? "bg-white/10 text-white shadow-[inset_3px_0_0_var(--accent)]" : "text-side-ink hover:bg-white/5 hover:text-white"}`}>
+            className={`${sideLink} ${on ? "bg-white/10 text-white shadow-[inset_3px_0_0_#ffffff]" : "text-side-ink hover:bg-white/5 hover:text-white"}`}>
             <n.icon size={18} />
             <span className="flex-1">{n.label}</span>
             {n.href === "/admin/possiveis-vendas" && <Badge n={pending} />}
@@ -62,7 +62,7 @@ function SideNav({ pending, onNavigate }: { pending: number; onNavigate?: () => 
 function UserBox({ name, role }: { name: string; role: keyof typeof ROLES }) {
   return (
     <div className="flex items-center gap-3 px-3 py-2">
-      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-accent text-sm font-bold text-accent-ink">{name.trim().charAt(0).toUpperCase() || "?"}</span>
+      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-white text-sm font-bold text-black">{name.trim().charAt(0).toUpperCase() || "?"}</span>
       <div className="min-w-0">
         <p className="truncate text-sm font-semibold text-white">{name}</p>
         <p className="text-xs text-side-ink">{ROLES[role]}</p>

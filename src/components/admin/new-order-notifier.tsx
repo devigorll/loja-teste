@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { BellRing, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-type NewOrder = { code: string; customer_name: string };
+type NewOrder = { code: string; customer_name: string; source?: string };
 
 export function NewOrderNotifier() {
   const router = useRouter();
@@ -19,7 +19,7 @@ export function NewOrderNotifier() {
       .channel("admin-new-orders")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders" }, (payload) => {
         const o = payload.new as NewOrder;
-        setToast({ code: o.code, customer_name: o.customer_name });
+        if (o.source !== "admin") setToast({ code: o.code, customer_name: o.customer_name }); // pedido criado no painel não é "novo pedido de cliente"
         router.refresh(); // atualiza o contador do menu e as listas
       })
       .subscribe();

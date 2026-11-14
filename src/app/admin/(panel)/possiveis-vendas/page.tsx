@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { formatBRL } from "@/lib/format";
 import { fmtDateTime } from "@/lib/dates";
@@ -8,14 +9,14 @@ export const dynamic = "force-dynamic";
 
 type Row = {
   id: string; code: string; customer_name: string; customer_phone: string | null;
-  total: number; created_at: string; was_edited: boolean; order_items: { quantity: number }[];
+  total: number; created_at: string; was_edited: boolean; source: string; order_items: { quantity: number }[];
 };
 
 export default async function PossibleSalesPage() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("orders")
-    .select("id, code, customer_name, customer_phone, total, created_at, was_edited, order_items(quantity)")
+    .select("id, code, customer_name, customer_phone, total, created_at, was_edited, source, order_items(quantity)")
     .eq("status", "awaiting_confirmation")
     .order("created_at", { ascending: false });
 
@@ -23,7 +24,8 @@ export default async function PossibleSalesPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Possíveis vendas" subtitle="Pedidos feitos pelo site que ainda aguardam a sua confirmação." />
+      <PageHeader title="Possíveis vendas" subtitle="Pedidos que ainda aguardam a sua confirmação: feitos pelo site ou registrados por você."
+        actions={<Link href="/admin/possiveis-vendas/novo" className="adm-btn adm-btn-primary"><Plus size={18} /> Novo pedido</Link>} />
 
       {error && <p role="alert" className="rounded-xl bg-bad/15 p-4 text-sm font-medium text-bad">Erro ao carregar os pedidos: {error.message}</p>}
 
@@ -46,7 +48,7 @@ export default async function PossibleSalesPage() {
                 </div>
                 <div className="mt-4 flex items-end justify-between gap-3">
                   <div className="text-xs text-muted">
-                    <p>{units} {units === 1 ? "item" : "itens"}{o.was_edited ? " · editado" : ""}</p>
+                    <p>{units} {units === 1 ? "item" : "itens"}{o.source === "admin" ? " · criado no painel" : ""}{o.was_edited ? " · editado" : ""}</p>
                     <p>{fmtDateTime(o.created_at)}</p>
                   </div>
                   <p className="text-xl font-black text-ink">{formatBRL(o.total)}</p>

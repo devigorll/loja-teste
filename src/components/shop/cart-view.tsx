@@ -96,7 +96,7 @@ export function CartView({ whatsapp }: { whatsapp: string | null }) {
   if (done) {
     return (
       <div className="mx-auto max-w-lg px-4 py-24 text-center">
-        <div className="mx-auto mb-5 grid size-14 place-items-center rounded-full bg-green-600 text-white"><Check size={28} /></div>
+        <div className="mx-auto mb-5 grid size-14 place-items-center rounded-full bg-neutral-950 text-white dark:bg-white dark:text-neutral-950"><Check size={28} /></div>
         <h1 className="text-2xl font-black tracking-tight">Pedido {done.code} registrado!</h1>
         <p className="mt-3 text-neutral-500">Abrindo o WhatsApp com a mensagem pronta. Se não abrir, toque no botão.</p>
         <a href={done.url} className="mt-8 inline-block rounded-full bg-neutral-950 px-7 py-3.5 font-semibold text-white transition active:scale-95 dark:bg-white dark:text-neutral-950">Abrir WhatsApp</a>
@@ -120,7 +120,7 @@ export function CartView({ whatsapp }: { whatsapp: string | null }) {
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
       <h1 className="text-3xl font-black tracking-tight">Sua sacola</h1>
-      {notice && <p role="status" className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-200">{notice}</p>}
+      {notice && <p role="status" className="mt-4 rounded-lg border border-neutral-300 bg-neutral-100 p-3 text-sm font-medium text-neutral-800 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200">{notice}</p>}
 
       <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_22rem]">
         <ul className="divide-y divide-neutral-200 dark:divide-neutral-800">
@@ -145,7 +145,7 @@ export function CartView({ whatsapp }: { whatsapp: string | null }) {
                       <span className="w-7 text-center text-sm font-semibold" aria-live="polite">{i.qty}</span>
                       <button type="button" aria-label="Aumentar quantidade" disabled={i.qty >= i.max} onClick={() => setQty(i.variantId, i.qty + 1)} className="grid size-9 place-items-center transition active:scale-90 disabled:opacity-30"><Plus size={14} /></button>
                     </div>
-                    <button type="button" aria-label={`Remover ${i.name}`} onClick={() => remove(i.variantId)} className="grid size-9 place-items-center rounded-full text-neutral-500 transition hover:bg-neutral-100 hover:text-red-600 active:scale-90 dark:hover:bg-neutral-800"><Trash2 size={16} /></button>
+                    <button type="button" aria-label={`Remover ${i.name}`} onClick={() => remove(i.variantId)} className="grid size-9 place-items-center rounded-full text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-950 dark:hover:text-white active:scale-90 dark:hover:bg-neutral-800"><Trash2 size={16} /></button>
                   </div>
                 </div>
               </motion.li>
@@ -170,8 +170,8 @@ export function CartView({ whatsapp }: { whatsapp: string | null }) {
             <label htmlFor="notes" className="text-sm font-medium">Observações <span className="font-normal text-neutral-500">(opcional)</span></label>
             <textarea id="notes" rows={2} maxLength={500} value={notes} onChange={(e) => setNotes(e.target.value)} className={field} />
           </div>
-          {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">{error}</p>}
-          <button type="submit" disabled={sending} className="w-full rounded-full bg-green-600 py-3.5 font-semibold text-white transition hover:bg-green-700 active:scale-[0.98] disabled:opacity-60">
+          {error && <p role="alert" className="rounded-lg border border-neutral-400 bg-neutral-100 p-3 text-sm font-semibold text-neutral-900 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100">{error}</p>}
+          <button type="submit" disabled={sending} className="w-full rounded-full bg-neutral-950 py-3.5 font-semibold text-white transition hover:bg-neutral-800 active:scale-[0.98] disabled:opacity-60 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200">
             {sending ? "Registrando pedido..." : "Finalizar compra pelo WhatsApp"}
           </button>
           <p className="text-xs text-neutral-500">Você revisa a mensagem no WhatsApp antes de enviar. O pagamento é combinado direto com a loja.</p>

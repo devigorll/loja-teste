@@ -20,50 +20,48 @@
   --color-side-ink: var(--side-ink);
 }
 
-/* ---------- Tema claro (padrão) ---------- */
+/* ---------- Tema claro (padrão) — identidade monocromática: preto, branco e cinzas ---------- */
 :root {
   color-scheme: light;
-  --app: #e7ebf3;
+  --app: #e6e6e6;
   --surface: #ffffff;
-  --surface-2: #f1f4fa;
-  --line: #d2d9e6;
-  --ink: #0f172a;
-  --muted: #56637a;
-  --accent: #4338ca;
-  --accent-2: #7c3aed;
+  --surface-2: #f3f3f3;
+  --line: #d2d2d2;
+  --ink: #0a0a0a;
+  --muted: #525252;
+  --accent: #171717;
+  --accent-2: #404040;
   --accent-ink: #ffffff;
-  --good: #065f46;
-  --good-solid: #047857;
-  --bad: #b91c1c;
-  --warn: #92400e;
-  --side: #0f172a;
-  --side-ink: #a9b6c9;
-  --dot: rgba(15, 23, 42, 0.07);
-  --shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 6px 16px rgba(15, 23, 42, 0.06);
-  --c1: #4338ca; --c2: #0891b2; --c3: #d97706; --c4: #059669; --c5: #db2777;
+  --good: #262626;
+  --bad: #0a0a0a;
+  --warn: #525252;
+  --side: #0a0a0a;
+  --side-ink: #a3a3a3;
+  --dot: rgba(0, 0, 0, 0.07);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.07), 0 6px 16px rgba(0, 0, 0, 0.07);
+  --c1: #0a0a0a; --c2: #404040; --c3: #737373; --c4: #8c8c8c; --c5: #b3b3b3;
 }
 
 /* ---------- Tema escuro ---------- */
 .dark {
   color-scheme: dark;
-  --app: #0a0e16;
-  --surface: #121927;
-  --surface-2: #1a2338;
-  --line: #27334b;
-  --ink: #e6ebf5;
-  --muted: #94a3bb;
-  --accent: #818cf8;
-  --accent-2: #a78bfa;
-  --accent-ink: #0a0e16;
-  --good: #34d399;
-  --good-solid: #047857;
-  --bad: #f87171;
-  --warn: #fbbf24;
-  --side: #070a11;
-  --side-ink: #94a3bb;
-  --dot: rgba(255, 255, 255, 0.04);
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 8px 20px rgba(0, 0, 0, 0.28);
-  --c1: #818cf8; --c2: #22d3ee; --c3: #fbbf24; --c4: #34d399; --c5: #f472b6;
+  --app: #0a0a0a;
+  --surface: #151515;
+  --surface-2: #1f1f1f;
+  --line: #2f2f2f;
+  --ink: #ededed;
+  --muted: #a3a3a3;
+  --accent: #f5f5f5;
+  --accent-2: #a3a3a3;
+  --accent-ink: #0a0a0a;
+  --good: #e5e5e5;
+  --bad: #fafafa;
+  --warn: #a3a3a3;
+  --side: #050505;
+  --side-ink: #a3a3a3;
+  --dot: rgba(255, 255, 255, 0.045);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 8px 20px rgba(0, 0, 0, 0.3);
+  --c1: #f5f5f5; --c2: #c4c4c4; --c3: #8f8f8f; --c4: #737373; --c5: #5a5a5a;
 }
 
 @layer base {
@@ -88,7 +86,7 @@
   }
   .adm-hero {
     background:
-      radial-gradient(rgba(255, 255, 255, 0.16) 1px, transparent 1px) 0 0 / 18px 18px,
+      radial-gradient(color-mix(in srgb, var(--accent-ink) 16%, transparent) 1px, transparent 1px) 0 0 / 18px 18px,
       linear-gradient(135deg, var(--accent), var(--accent-2));
     color: var(--accent-ink);
     border-radius: 1rem;
@@ -124,8 +122,8 @@
   .adm-btn:disabled { opacity: 0.5; pointer-events: none; }
   .adm-btn-primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
   .adm-btn-primary:hover { background: color-mix(in srgb, var(--accent) 88%, #000); }
-  .adm-btn-good { background: var(--good-solid); color: #fff; border-color: transparent; }
-  .adm-btn-good:hover { background: color-mix(in srgb, var(--good-solid) 88%, #000); }
+  .adm-btn-good { background: var(--ink); color: var(--surface); border-color: transparent; }
+  .adm-btn-good:hover { background: color-mix(in srgb, var(--ink) 85%, var(--surface)); }
   .adm-btn-danger { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 45%, transparent); }
   .adm-btn-danger:hover { background: color-mix(in srgb, var(--bad) 10%, transparent); }
   .adm-chip {

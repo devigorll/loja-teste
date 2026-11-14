@@ -4,11 +4,12 @@ import { Clock, Package, PackageMinus, PackageX, Receipt, ShoppingBag, TrendingU
 import { createClient } from "@/lib/supabase/server";
 import { formatBRL } from "@/lib/format";
 import { fmtDay, monthStart, todayISO } from "@/lib/dates";
-import { getDashboard, parseDashboardRange } from "@/lib/admin/dashboard";
+import { getDashboard, getRevenueHistory, parseDashboardRange } from "@/lib/admin/dashboard";
 import { PageHeader } from "@/components/admin/page-header";
 import { PeriodPresets } from "@/components/admin/period-presets";
 import { RankedBars } from "@/components/admin/ranked-bars";
 import { PaymentsChart, RevenueChart, SalesOrdersChart } from "@/components/admin/dashboard-charts";
+import { RevenueHistory } from "@/components/admin/revenue-history";
 
 export const dynamic = "force-dynamic";
 
@@ -67,11 +68,12 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   const t = todayISO();
 
   const supabase = await createClient();
-  const [cur, prev, today, month] = await Promise.all([
+  const [cur, prev, today, month, history] = await Promise.all([
     getDashboard(supabase, de, ate),
     getDashboard(supabase, prevDe, prevAte),
     getDashboard(supabase, t, t),
     getDashboard(supabase, monthStart(t), t),
+    getRevenueHistory(supabase),
   ]);
 
   const c = cur.data;
@@ -135,6 +137,16 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
         <RevenueChart data={c?.daily ?? []} />
       </Panel>
 
+      <Panel title="Faturamento mensal e anual" hint="Histórico completo das vendas confirmadas: compare meses e anos">
+        {history.error ? (
+          <p role="alert" className="rounded-xl bg-bad/15 p-4 text-sm font-medium text-bad">
+            Não foi possível carregar o histórico: {history.error}. Se a mensagem citar “revenue_history”, rode o SQL 0007 no Supabase.
+          </p>
+        ) : (
+          <RevenueHistory rows={history.data} nowYear={Number(t.slice(0, 4))} nowMonth={Number(t.slice(5, 7))} />
+        )}
+      </Panel>
+
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel title="Pedidos e vendas por dia" hint="Pedidos recebidos × vendas confirmadas">
           <SalesOrdersChart data={c?.daily ?? []} />
@@ -146,7 +158,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Panel title="Mais vendidos" hint="Por unidades vendidas">
-          <RankedBars color="var(--c4)" empty="Sem vendas no período."
+          <RankedBars color="var(--c1)" empty="Sem vendas no período."
             items={(c?.top_products ?? []).map((i) => ({ name: i.name, value: i.qty, label: `${i.qty} un.`, sub: formatBRL(Number(i.revenue)) }))} />
         </Panel>
         <Panel title="Menos vendidos" hint="Produtos ativos com menos saídas">
@@ -154,7 +166,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
             items={(c?.bottom_products ?? []).map((i) => ({ name: i.name, value: i.qty, label: `${i.qty} un.`, sub: i.qty === 0 ? "Sem vendas no período" : formatBRL(Number(i.revenue)) }))} />
         </Panel>
         <Panel title="Desempenho por categoria" hint="Por faturamento">
-          <RankedBars color="var(--c1)" empty="Sem vendas no período."
+          <RankedBars color="var(--c2)" empty="Sem vendas no período."
             items={(c?.categories ?? []).map((i) => ({ name: i.name, value: Number(i.revenue), label: formatBRL(Number(i.revenue)), sub: `${i.qty} un.` }))} />
         </Panel>
       </div>

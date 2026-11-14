@@ -4,7 +4,8 @@ import { ChevronLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { normalizeWhatsApp } from "@/lib/whatsapp";
 import { fmtDateTime } from "@/lib/dates";
-import { OrderEditor, type CatalogVariant, type EditorLine } from "@/components/admin/order-editor";
+import { loadCatalog, type CatalogVariant } from "@/lib/admin/catalog";
+import { OrderEditor, type EditorLine } from "@/components/admin/order-editor";
 
 export const dynamic = "force-dynamic";
 
@@ -17,11 +18,6 @@ const STATUS: Record<string, { label: string; cls: string }> = {
 };
 
 type Item = { id: string; variant_id: string | null; product_name: string; size: string; color: string; unit_price: number; quantity: number };
-type VarRow = {
-  id: string; size: string; color: string; stock: number; price_override: number | null; is_active: boolean;
-  products: { name: string; price: number; promo_price: number | null; is_active: boolean } | null;
-};
-
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
@@ -42,22 +38,13 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   let pinSet = true;
 
   if (editable) {
-    const [{ data: vars }, { data: pms }, { data: pin }] = await Promise.all([
-      supabase.from("product_variants").select("id, size, color, stock, price_override, is_active, products(name, price, promo_price, is_active)"),
+    const [cat, { data: pms }, { data: pin }] = await Promise.all([
+      loadCatalog(supabase),
       supabase.from("payment_methods").select("id, name").eq("is_active", true).order("position"),
       supabase.rpc("pin_status"),
     ]);
-    const rows = (vars ?? []) as unknown as VarRow[];
-    rows.forEach((r) => { stock[r.id] = r.stock; });
-    catalog = rows
-      .filter((r) => r.is_active && r.products?.is_active)
-      .map((r) => ({
-        id: r.id,
-        label: `${r.products!.name} — ${r.size} / ${r.color}`,
-        price: r.price_override ?? r.products!.promo_price ?? r.products!.price,
-        stock: r.stock,
-      }))
-      .sort((a, b) => a.label.localeCompare(b.label));
+    catalog = cat.catalog;
+    Object.assign(stock, cat.stock);
     methods = pms ?? [];
     pinSet = Boolean((pin as { is_set?: boolean } | null)?.is_set);
   }
@@ -72,6 +59,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-black tracking-tight text-ink sm:text-3xl">{order.code}</h1>
         <span className={`adm-badge ${st.cls}`}>{st.label}</span>
+        {order.source === "admin" && <span className="adm-badge bg-surface-2 text-muted">Criado no painel</span>}
         {order.was_edited && <span className="adm-badge bg-surface-2 text-muted">Editado pelo painel</span>}
       </div>
 
