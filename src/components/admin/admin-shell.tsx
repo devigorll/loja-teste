@@ -4,12 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ClipboardList, ExternalLink, LayoutDashboard, Menu, X } from "lucide-react";
+import { ClipboardList, ExternalLink, LayoutDashboard, Menu, ShieldCheck, X } from "lucide-react";
 import { SignOutButton } from "./sign-out-button";
 
 const NAV = [
   { href: "/admin", label: "Início", icon: LayoutDashboard, exact: true },
   { href: "/admin/possiveis-vendas", label: "Possíveis vendas", icon: ClipboardList, exact: false },
+  { href: "/admin/seguranca", label: "Segurança", icon: ShieldCheck, exact: false },
 ];
 
 const item = "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition active:scale-[0.98]";
