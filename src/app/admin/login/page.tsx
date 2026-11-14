@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { Store } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { AdminThemeToggle } from "@/components/admin/admin-theme-toggle";
 
 function translate(message: string) {
   if (/invalid login credentials/i.test(message)) return "E-mail ou senha inválidos.";
@@ -34,24 +36,30 @@ export default function AdminLoginPage() {
     }
   }
 
-  const input = "w-full rounded-lg border border-neutral-300 bg-transparent px-3 py-2.5 outline-none transition focus:ring-2 focus:ring-neutral-900 dark:border-neutral-700 dark:focus:ring-white";
   return (
-    <main className="flex min-h-dvh items-center justify-center p-6">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-5 rounded-2xl border border-neutral-200 p-8 dark:border-neutral-800">
-        <h1 className="text-2xl font-semibold tracking-tight">Acesso administrativo</h1>
-        <div className="space-y-1.5">
-          <label htmlFor="email" className="text-sm font-medium">E-mail</label>
-          <input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className={input} />
-        </div>
-        <div className="space-y-1.5">
-          <label htmlFor="password" className="text-sm font-medium">Senha</label>
-          <input id="password" type="password" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} className={input} />
-        </div>
-        {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">{error}</p>}
-        <button type="submit" disabled={loading} className="w-full rounded-full bg-neutral-900 py-3 font-medium text-white transition active:scale-[0.98] disabled:opacity-60 dark:bg-white dark:text-neutral-900">
-          {loading ? "Entrando..." : "Entrar"}
-        </button>
-      </form>
+    <main className="adm-bg flex min-h-dvh items-center justify-center p-4">
+      <div className="w-full max-w-sm space-y-4">
+        <form onSubmit={handleSubmit} className="adm-card space-y-5 p-6 sm:p-8">
+          <div className="flex items-center gap-3">
+            <span className="grid size-11 place-items-center rounded-xl bg-accent text-accent-ink"><Store size={22} /></span>
+            <div>
+              <h1 className="text-xl font-black tracking-tight text-ink">Acesso administrativo</h1>
+              <p className="text-sm text-muted">Entre para gerenciar a loja</p>
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <label htmlFor="email" className="text-sm font-medium text-ink">E-mail</label>
+            <input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className="adm-input" />
+          </div>
+          <div className="space-y-1.5">
+            <label htmlFor="password" className="text-sm font-medium text-ink">Senha</label>
+            <input id="password" type="password" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} className="adm-input" />
+          </div>
+          {error && <p role="alert" className="rounded-xl bg-bad/15 p-3 text-sm font-medium text-bad">{error}</p>}
+          <button type="submit" disabled={loading} className="adm-btn adm-btn-primary w-full">{loading ? "Entrando..." : "Entrar"}</button>
+        </form>
+        <div className="mx-auto w-fit rounded-full bg-side"><AdminThemeToggle variant="icon" /></div>
+      </div>
     </main>
   );
 }

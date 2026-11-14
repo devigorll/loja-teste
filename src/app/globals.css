@@ -3,10 +3,158 @@
 
 @theme inline {
   --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+
+  /* Cores semânticas do painel (acompanham o tema claro/escuro automaticamente) */
+  --color-app: var(--app);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-good: var(--good);
+  --color-bad: var(--bad);
+  --color-warn: var(--warn);
+  --color-side: var(--side);
+  --color-side-ink: var(--side-ink);
 }
 
-html { scroll-behavior: smooth; }
+/* ---------- Tema claro (padrão) ---------- */
+:root {
+  color-scheme: light;
+  --app: #e7ebf3;
+  --surface: #ffffff;
+  --surface-2: #f1f4fa;
+  --line: #d2d9e6;
+  --ink: #0f172a;
+  --muted: #56637a;
+  --accent: #4338ca;
+  --accent-2: #7c3aed;
+  --accent-ink: #ffffff;
+  --good: #065f46;
+  --good-solid: #047857;
+  --bad: #b91c1c;
+  --warn: #92400e;
+  --side: #0f172a;
+  --side-ink: #a9b6c9;
+  --dot: rgba(15, 23, 42, 0.07);
+  --shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 6px 16px rgba(15, 23, 42, 0.06);
+  --c1: #4338ca; --c2: #0891b2; --c3: #d97706; --c4: #059669; --c5: #db2777;
+}
+
+/* ---------- Tema escuro ---------- */
+.dark {
+  color-scheme: dark;
+  --app: #0a0e16;
+  --surface: #121927;
+  --surface-2: #1a2338;
+  --line: #27334b;
+  --ink: #e6ebf5;
+  --muted: #94a3bb;
+  --accent: #818cf8;
+  --accent-2: #a78bfa;
+  --accent-ink: #0a0e16;
+  --good: #34d399;
+  --good-solid: #047857;
+  --bad: #f87171;
+  --warn: #fbbf24;
+  --side: #070a11;
+  --side-ink: #94a3bb;
+  --dot: rgba(255, 255, 255, 0.04);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 8px 20px rgba(0, 0, 0, 0.28);
+  --c1: #818cf8; --c2: #22d3ee; --c3: #fbbf24; --c4: #34d399; --c5: #f472b6;
+}
+
+@layer base {
+  *, ::before, ::after { border-color: var(--line); }
+  html { scroll-behavior: smooth; }
+  html:has(.adm-bg) { background-color: var(--app); }
+}
+
+/* ---------- Componentes do painel administrativo ---------- */
+@layer components {
+  .adm-bg {
+    background-color: var(--app);
+    background-image: radial-gradient(var(--dot) 1px, transparent 1px);
+    background-size: 20px 20px;
+    color: var(--ink);
+  }
+  .adm-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    box-shadow: var(--shadow);
+  }
+  .adm-hero {
+    background:
+      radial-gradient(rgba(255, 255, 255, 0.16) 1px, transparent 1px) 0 0 / 18px 18px,
+      linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: var(--accent-ink);
+    border-radius: 1rem;
+    box-shadow: var(--shadow);
+  }
+  .adm-input {
+    width: 100%;
+    min-height: 2.75rem;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--ink);
+    border-radius: 0.75rem;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+    outline: none;
+    transition: box-shadow 0.15s, border-color 0.15s;
+  }
+  .adm-input::placeholder { color: var(--muted); opacity: 0.8; }
+  .adm-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 28%, transparent);
+  }
+  .adm-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    min-height: 2.75rem; padding: 0.5rem 1.25rem; border-radius: 999px;
+    font-size: 0.875rem; font-weight: 600; white-space: nowrap;
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+    transition: transform 0.1s, background-color 0.15s, opacity 0.15s;
+    cursor: pointer;
+  }
+  .adm-btn:hover { background: var(--surface-2); }
+  .adm-btn:active { transform: scale(0.97); }
+  .adm-btn:disabled { opacity: 0.5; pointer-events: none; }
+  .adm-btn-primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+  .adm-btn-primary:hover { background: color-mix(in srgb, var(--accent) 88%, #000); }
+  .adm-btn-good { background: var(--good-solid); color: #fff; border-color: transparent; }
+  .adm-btn-good:hover { background: color-mix(in srgb, var(--good-solid) 88%, #000); }
+  .adm-btn-danger { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 45%, transparent); }
+  .adm-btn-danger:hover { background: color-mix(in srgb, var(--bad) 10%, transparent); }
+  .adm-chip {
+    display: inline-flex; align-items: center; min-height: 2.5rem; padding: 0 1rem;
+    border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+    font-size: 0.875rem; font-weight: 500; white-space: nowrap; color: var(--ink);
+    transition: transform 0.1s, background-color 0.15s, border-color 0.15s;
+  }
+  .adm-chip:hover { border-color: var(--accent); }
+  .adm-chip:active { transform: scale(0.96); }
+  .adm-chip[aria-current="true"] { background: var(--accent); color: var(--accent-ink); border-color: transparent; font-weight: 600; }
+  .adm-badge {
+    display: inline-flex; align-items: center; border-radius: 999px;
+    padding: 0.2rem 0.65rem; font-size: 0.75rem; font-weight: 600; white-space: nowrap;
+  }
+  .adm-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; text-align: left; }
+  .adm-table th {
+    background: var(--surface-2); color: var(--muted); font-size: 0.72rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.05em; padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .adm-table td { padding: 0.875rem 1rem; border-bottom: 1px solid var(--line); }
+  .adm-table tbody tr:last-child td { border-bottom: 0; }
+  .adm-table tbody tr { transition: background-color 0.15s; }
+  .adm-table tbody tr:hover { background: var(--surface-2); }
+  .adm-table tfoot td { border-top: 1px solid var(--line); border-bottom: 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
-:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--accent, currentColor); outline-offset: 2px; }

@@ -28,6 +28,8 @@ async function call(fn: string, args: Record<string, unknown>): Promise<RpcResul
   return (data as RpcResult) ?? { ok: false, error: "Resposta inválida." };
 }
 
+const lineTotal = (price: string, qty: number) => (Math.round((Number(price.replace(",", ".")) || 0) * 100) * qty) / 100;
+
 export function OrderEditor({ orderId, wasEdited, readOnly, initial, catalog, stock, methods }: Props) {
   const router = useRouter();
   const [lines, setLines] = useState<EditorLine[]>(initial);
@@ -105,88 +107,85 @@ export function OrderEditor({ orderId, wasEdited, readOnly, initial, catalog, st
     router.refresh();
   }
 
-  const field = "rounded-lg border border-neutral-300 bg-transparent px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-neutral-900 dark:border-neutral-700 dark:focus:ring-white";
-  const btn = "rounded-full px-5 py-2.5 text-sm font-semibold transition active:scale-95 disabled:opacity-50";
+  const stepBtn = "grid size-11 place-items-center text-ink transition hover:bg-surface-2 active:scale-90 disabled:opacity-30";
 
   return (
-    <div className="mt-6 space-y-6">
+    <div className="space-y-5">
       <ul className="space-y-3">
         {lines.map((l) => {
           const st = l.variant_id ? stock[l.variant_id] ?? catalog.find((c) => c.id === l.variant_id)?.stock : undefined;
           const short = !readOnly && st !== undefined && l.quantity > st;
           return (
-            <li key={l.key} className="grid gap-3 rounded-xl border border-neutral-200 p-4 sm:grid-cols-[1fr_auto_8rem_auto] sm:items-center dark:border-neutral-800">
-              <div className="min-w-0">
-                <p className="font-medium">{l.name}</p>
-                <p className="text-xs text-neutral-500">Tam. {l.size} · {l.color}</p>
-                {!l.variant_id && !readOnly && <p className="text-xs text-red-600">Produto removido do catálogo. Remova este item para poder confirmar.</p>}
-                {!readOnly && st !== undefined && <p className={`text-xs ${short ? "font-semibold text-red-600" : "text-neutral-500"}`}>Estoque: {st}{short ? " (insuficiente)" : ""}</p>}
+            <li key={l.key} className="adm-card space-y-3 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-bold text-ink">{l.name}</p>
+                  <p className="text-xs text-muted">Tam. {l.size} · {l.color}</p>
+                  {!l.variant_id && !readOnly && <p className="mt-1 text-xs font-medium text-bad">Produto removido do catálogo. Remova este item para poder confirmar.</p>}
+                  {!readOnly && st !== undefined && <p className={`mt-1 text-xs ${short ? "font-bold text-bad" : "text-muted"}`}>Estoque: {st}{short ? " (insuficiente)" : ""}</p>}
+                </div>
+                <p className="shrink-0 text-base font-black text-ink">{formatBRL(lineTotal(l.price, l.quantity))}</p>
               </div>
 
               {readOnly ? (
-                <>
-                  <p className="text-sm">{l.quantity} un.</p>
-                  <p className="text-sm">{formatBRL(Number(l.price))}</p>
-                </>
+                <p className="text-sm text-muted">{l.quantity} un. × {formatBRL(Number(l.price))}</p>
               ) : (
-                <>
-                  <div className="flex items-center rounded-full border border-neutral-300 dark:border-neutral-700">
-                    <button type="button" aria-label="Diminuir" disabled={l.quantity <= 1} onClick={() => setQty(l.key, l.quantity - 1)} className="grid size-9 place-items-center transition active:scale-90 disabled:opacity-30"><Minus size={14} /></button>
-                    <span className="w-8 text-center text-sm font-semibold">{l.quantity}</span>
-                    <button type="button" aria-label="Aumentar" onClick={() => setQty(l.key, l.quantity + 1)} className="grid size-9 place-items-center transition active:scale-90"><Plus size={14} /></button>
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex items-center overflow-hidden rounded-full border border-line bg-surface-2">
+                    <button type="button" aria-label="Diminuir quantidade" disabled={l.quantity <= 1} onClick={() => setQty(l.key, l.quantity - 1)} className={stepBtn}><Minus size={16} /></button>
+                    <span className="w-9 text-center text-sm font-bold text-ink" aria-live="polite">{l.quantity}</span>
+                    <button type="button" aria-label="Aumentar quantidade" onClick={() => setQty(l.key, l.quantity + 1)} className={stepBtn}><Plus size={16} /></button>
                   </div>
-                  <label className="flex items-center gap-1 text-sm">
-                    <span className="text-neutral-500">R$</span>
-                    <input inputMode="decimal" aria-label={`Preço unitário de ${l.name}`} value={l.price} onChange={(e) => setPrice(l.key, e.target.value)} className={`${field} w-full`} />
+                  <label className="flex min-w-0 flex-1 items-center gap-2 sm:max-w-40">
+                    <span className="text-sm text-muted">R$</span>
+                    <input inputMode="decimal" aria-label={`Preço unitário de ${l.name}`} value={l.price} onChange={(e) => setPrice(l.key, e.target.value)} className="adm-input" />
                   </label>
-                </>
-              )}
-
-              <div className="flex items-center justify-between gap-3 sm:justify-end">
-                <p className="font-semibold">{formatBRL((Math.round((Number(l.price.replace(",", ".")) || 0) * 100) * l.quantity) / 100)}</p>
-                {!readOnly && (
                   <button type="button" aria-label={`Remover ${l.name}`} disabled={lines.length <= 1} onClick={() => removeLine(l.key)}
-                    className="grid size-9 place-items-center rounded-full text-neutral-500 transition hover:bg-neutral-100 hover:text-red-600 active:scale-90 disabled:opacity-30 dark:hover:bg-neutral-800"><Trash2 size={16} /></button>
-                )}
-              </div>
+                    className="adm-btn adm-btn-danger ml-auto size-11 min-h-0 p-0"><Trash2 size={18} /></button>
+                </div>
+              )}
             </li>
           );
         })}
       </ul>
 
       {!readOnly && (
-        <div className="flex flex-col gap-2 rounded-xl border border-dashed border-neutral-300 p-4 sm:flex-row dark:border-neutral-700">
-          <select value={pick} onChange={(e) => setPick(e.target.value)} aria-label="Adicionar produto" className={`${field} flex-1`}>
+        <div className="adm-card flex flex-col gap-3 border-dashed p-4 sm:flex-row">
+          <select value={pick} onChange={(e) => setPick(e.target.value)} aria-label="Adicionar produto" className="adm-input flex-1">
             <option value="">Adicionar produto...</option>
             {catalog.map((c) => <option key={c.id} value={c.id} disabled={c.stock <= 0}>{c.label} · {formatBRL(c.price)} · estoque {c.stock}</option>)}
           </select>
-          <input type="number" min={1} max={999} value={pickQty} onChange={(e) => setPickQty(Math.max(1, Number(e.target.value) || 1))} aria-label="Quantidade" className={`${field} w-24`} />
-          <button type="button" onClick={addLine} disabled={!pick} className={`${btn} bg-neutral-950 text-white dark:bg-white dark:text-neutral-950`}>Adicionar</button>
+          <div className="flex gap-3">
+            <input type="number" min={1} max={999} value={pickQty} onChange={(e) => setPickQty(Math.max(1, Number(e.target.value) || 1))} aria-label="Quantidade" className="adm-input w-24" />
+            <button type="button" onClick={addLine} disabled={!pick} className="adm-btn adm-btn-primary flex-1 sm:flex-none">Adicionar</button>
+          </div>
         </div>
       )}
 
-      <div className="flex items-baseline justify-between border-t border-neutral-200 pt-4 dark:border-neutral-800">
-        <span className="text-neutral-500">Total</span>
-        <span className="text-2xl font-black">{formatBRL(total)}</span>
+      <div className="adm-card flex items-baseline justify-between p-4 sm:p-5">
+        <span className="text-sm font-semibold text-muted">Total do pedido</span>
+        <span className="text-3xl font-black tracking-tight text-ink">{formatBRL(total)}</span>
       </div>
 
-      {message && <p role="status" className={`rounded-lg p-3 text-sm ${message.ok ? "bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-200" : "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300"}`}>{message.text}</p>}
+      {message && <p role="status" className={`rounded-xl p-3 text-sm font-medium ${message.ok ? "bg-good/15 text-good" : "bg-bad/15 text-bad"}`}>{message.text}</p>}
 
       {!readOnly && (
-        <div className="space-y-5 rounded-xl border border-neutral-200 p-4 dark:border-neutral-800">
+        <div className="adm-card space-y-5 p-4 sm:p-5">
           {dirty && (
-            <div className="flex flex-wrap items-center gap-3">
-              <p className="flex-1 text-sm text-amber-700 dark:text-amber-300">Você tem alterações não salvas. Salvar exige o código de 4 dígitos.</p>
-              <button type="button" onClick={() => setLines(initial)} className={`${btn} border border-neutral-300 dark:border-neutral-700`}>Descartar</button>
-              <button type="button" disabled={!valid || busy} onClick={() => { setDialogError(null); setDialog("save"); }} className={`${btn} bg-neutral-950 text-white dark:bg-white dark:text-neutral-950`}>Salvar alterações</button>
+            <div className="space-y-3 rounded-xl bg-warn/15 p-3">
+              <p className="text-sm font-medium text-warn">Você tem alterações não salvas. Salvar exige o código de 4 dígitos.</p>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <button type="button" onClick={() => setLines(initial)} className="adm-btn">Descartar</button>
+                <button type="button" disabled={!valid || busy} onClick={() => { setDialogError(null); setDialog("save"); }} className="adm-btn adm-btn-primary">Salvar alterações</button>
+              </div>
             </div>
           )}
 
           <fieldset>
-            <legend className="mb-2 text-sm font-medium">Forma de pagamento</legend>
+            <legend className="mb-2 text-sm font-semibold text-ink">Forma de pagamento</legend>
             <div className="flex flex-wrap gap-2">
               {methods.map((m) => (
-                <label key={m.id} className={`cursor-pointer rounded-full border px-4 py-2 text-sm font-medium transition active:scale-95 ${method === m.id ? "border-neutral-950 bg-neutral-950 text-white dark:border-white dark:bg-white dark:text-neutral-950" : "border-neutral-300 dark:border-neutral-700"}`}>
+                <label key={m.id} aria-current={method === m.id ? "true" : undefined} className="adm-chip cursor-pointer">
                   <input type="radio" name="method" value={m.id} checked={method === m.id} onChange={() => setMethod(m.id)} className="sr-only" />
                   {m.name}
                 </label>
@@ -194,11 +193,11 @@ export function OrderEditor({ orderId, wasEdited, readOnly, initial, catalog, st
             </div>
           </fieldset>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <button type="button" onClick={startConfirm} disabled={busy || dirty || !valid || !method} className={`${btn} bg-green-600 text-white hover:bg-green-700`}>Confirmar venda</button>
-            <button type="button" onClick={cancelOrder} disabled={busy} className={`${btn} border border-red-300 text-red-700 dark:border-red-900 dark:text-red-300`}>Cancelar pedido</button>
-            {dirty && <span className="text-xs text-neutral-500">Salve as alterações antes de confirmar.</span>}
-            {!dirty && wasEdited && <span className="text-xs text-neutral-500">Pedido editado: a confirmação exige o código.</span>}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <button type="button" onClick={startConfirm} disabled={busy || dirty || !valid || !method} className="adm-btn adm-btn-good">Confirmar venda</button>
+            <button type="button" onClick={cancelOrder} disabled={busy} className="adm-btn adm-btn-danger">Cancelar pedido</button>
+            {dirty && <span className="text-xs text-muted">Salve as alterações antes de confirmar.</span>}
+            {!dirty && wasEdited && <span className="text-xs text-muted">Pedido editado: a confirmação exige o código.</span>}
           </div>
         </div>
       )}

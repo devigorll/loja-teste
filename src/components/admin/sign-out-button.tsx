@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-export function SignOutButton({ className = "" }: { className?: string }) {
+export function SignOutButton({ variant = "default", className = "" }: { variant?: "default" | "side"; className?: string }) {
   const [loading, setLoading] = useState(false);
 
   async function handleSignOut() {
@@ -12,10 +13,13 @@ export function SignOutButton({ className = "" }: { className?: string }) {
     window.location.assign("/admin/login");
   }
 
+  const base = variant === "side"
+    ? "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-side-ink transition hover:bg-white/5 hover:text-white active:scale-[0.98] disabled:opacity-60"
+    : "adm-btn";
+
   return (
-    <button type="button" onClick={handleSignOut} disabled={loading}
-      className={`rounded-full border border-neutral-300 px-4 py-2 text-sm font-medium transition hover:bg-neutral-100 active:scale-95 disabled:opacity-60 dark:border-neutral-700 dark:hover:bg-neutral-800 ${className}`}>
-      {loading ? "Saindo..." : "Sair"}
+    <button type="button" onClick={handleSignOut} disabled={loading} className={`${base} ${className}`}>
+      <LogOut size={18} /> {loading ? "Saindo..." : "Sair"}
     </button>
   );
 }

@@ -20,7 +20,7 @@ export function NewOrderNotifier() {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders" }, (payload) => {
         const o = payload.new as NewOrder;
         setToast({ code: o.code, customer_name: o.customer_name });
-        router.refresh(); // atualiza o contador do menu e a lista
+        router.refresh(); // atualiza o contador do menu e as listas
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -36,14 +36,14 @@ export function NewOrderNotifier() {
     <AnimatePresence>
       {toast && (
         <motion.div key="toast" role="status" initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}
-          className="fixed inset-x-4 top-4 z-[200] flex items-start gap-3 rounded-xl border border-neutral-200 bg-white p-4 shadow-xl sm:left-auto sm:w-96 dark:border-neutral-700 dark:bg-neutral-900">
-          <BellRing className="mt-0.5 shrink-0 text-green-600" size={20} />
+          className="adm-card fixed inset-x-3 top-3 z-[200] flex items-start gap-3 border-good/40 p-4 sm:left-auto sm:right-4 sm:top-4 sm:w-96">
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-good/15 text-good"><BellRing size={20} /></span>
           <div className="min-w-0 flex-1">
-            <p className="font-semibold">Você recebeu um novo pedido!</p>
-            <p className="truncate text-sm text-neutral-500">{toast.code} · {toast.customer_name}</p>
-            <Link href="/admin/possiveis-vendas" onClick={() => setToast(null)} className="mt-2 inline-block text-sm font-medium underline underline-offset-4">Ver possíveis vendas</Link>
+            <p className="font-bold text-ink">Você recebeu um novo pedido!</p>
+            <p className="truncate text-sm text-muted">{toast.code} · {toast.customer_name}</p>
+            <Link href="/admin/possiveis-vendas" onClick={() => setToast(null)} className="mt-2 inline-block text-sm font-semibold text-accent underline underline-offset-4">Ver possíveis vendas</Link>
           </div>
-          <button type="button" aria-label="Fechar aviso" onClick={() => setToast(null)} className="grid size-8 place-items-center rounded-full transition hover:bg-neutral-100 active:scale-90 dark:hover:bg-neutral-800"><X size={16} /></button>
+          <button type="button" aria-label="Fechar aviso" onClick={() => setToast(null)} className="grid size-9 place-items-center rounded-full text-muted transition hover:bg-surface-2 active:scale-90"><X size={16} /></button>
         </motion.div>
       )}
     </AnimatePresence>

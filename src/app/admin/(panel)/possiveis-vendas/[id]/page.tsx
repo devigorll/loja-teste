@@ -1,17 +1,19 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ChevronLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { normalizeWhatsApp } from "@/lib/whatsapp";
+import { fmtDateTime } from "@/lib/dates";
 import { OrderEditor, type CatalogVariant, type EditorLine } from "@/components/admin/order-editor";
 
 export const dynamic = "force-dynamic";
 
 const STATUS: Record<string, { label: string; cls: string }> = {
-  awaiting_confirmation: { label: "Possível venda", cls: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200" },
-  in_progress: { label: "Em atendimento", cls: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200" },
-  confirmed: { label: "Venda confirmada", cls: "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200" },
-  completed: { label: "Venda confirmada", cls: "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200" },
-  cancelled: { label: "Cancelado", cls: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200" },
+  awaiting_confirmation: { label: "Possível venda", cls: "bg-warn/15 text-warn" },
+  in_progress: { label: "Em atendimento", cls: "bg-warn/15 text-warn" },
+  confirmed: { label: "Venda confirmada", cls: "bg-good/15 text-good" },
+  completed: { label: "Venda confirmada", cls: "bg-good/15 text-good" },
+  cancelled: { label: "Cancelado", cls: "bg-bad/15 text-bad" },
 };
 
 type Item = { id: string; variant_id: string | null; product_name: string; size: string; color: string; unit_price: number; quantity: number };
@@ -61,34 +63,34 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   }
 
   const wa = normalizeWhatsApp(order.customer_phone);
-  const st = STATUS[order.status] ?? { label: order.status, cls: "bg-neutral-100 text-neutral-800" };
+  const st = STATUS[order.status] ?? { label: order.status, cls: "bg-surface-2 text-ink" };
 
   return (
-    <div className="mx-auto max-w-4xl">
-      <Link href="/admin/possiveis-vendas" className="text-sm text-neutral-500 underline underline-offset-4">← Voltar</Link>
+    <div className="mx-auto max-w-4xl space-y-5">
+      <Link href="/admin/possiveis-vendas" className="inline-flex min-h-10 items-center gap-1 text-sm font-semibold text-muted transition hover:text-ink"><ChevronLeft size={18} /> Voltar</Link>
 
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-black tracking-tight">{order.code}</h1>
-        <span className={`rounded-full px-3 py-1 text-xs font-medium ${st.cls}`}>{st.label}</span>
-        {order.was_edited && <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium dark:bg-neutral-800">Editado pelo painel</span>}
+      <div className="flex flex-wrap items-center gap-3">
+        <h1 className="text-2xl font-black tracking-tight text-ink sm:text-3xl">{order.code}</h1>
+        <span className={`adm-badge ${st.cls}`}>{st.label}</span>
+        {order.was_edited && <span className="adm-badge bg-surface-2 text-muted">Editado pelo painel</span>}
       </div>
 
       {editable && !pinSet && (
-        <p className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-200">
-          O código de autorização ainda não foi definido. <Link href="/admin/seguranca" className="font-medium underline">Defina em Segurança</Link> para poder editar pedidos.
+        <p className="rounded-xl bg-warn/15 p-3 text-sm font-medium text-warn">
+          O código de autorização ainda não foi definido. <Link href="/admin/seguranca" className="underline">Defina em Segurança</Link> para poder editar pedidos.
         </p>
       )}
 
-      <dl className="mt-6 grid gap-4 rounded-xl border border-neutral-200 p-5 sm:grid-cols-3 dark:border-neutral-800">
-        <div><dt className="text-xs text-neutral-500">Cliente</dt><dd className="font-medium">{order.customer_name}</dd></div>
+      <dl className="adm-card grid gap-4 p-5 sm:grid-cols-3">
+        <div><dt className="text-xs font-semibold uppercase tracking-wide text-muted">Cliente</dt><dd className="mt-0.5 font-semibold text-ink">{order.customer_name}</dd></div>
         <div>
-          <dt className="text-xs text-neutral-500">Telefone</dt>
-          <dd className="font-medium">
-            {order.customer_phone ? (wa ? <a href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{order.customer_phone}</a> : order.customer_phone) : "Não informado"}
+          <dt className="text-xs font-semibold uppercase tracking-wide text-muted">Telefone</dt>
+          <dd className="mt-0.5 font-semibold text-ink">
+            {order.customer_phone ? (wa ? <a href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer" className="text-accent underline underline-offset-4">{order.customer_phone}</a> : order.customer_phone) : "Não informado"}
           </dd>
         </div>
-        <div><dt className="text-xs text-neutral-500">Data</dt><dd className="font-medium">{new Date(order.created_at).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}</dd></div>
-        {order.notes && <div className="sm:col-span-3"><dt className="text-xs text-neutral-500">Observações</dt><dd>{order.notes}</dd></div>}
+        <div><dt className="text-xs font-semibold uppercase tracking-wide text-muted">Data</dt><dd className="mt-0.5 font-semibold text-ink">{fmtDateTime(order.created_at)}</dd></div>
+        {order.notes && <div className="sm:col-span-3"><dt className="text-xs font-semibold uppercase tracking-wide text-muted">Observações</dt><dd className="mt-0.5 text-ink">{order.notes}</dd></div>}
       </dl>
 
       <OrderEditor

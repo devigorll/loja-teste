@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { formatBRL } from "@/lib/format";
 import { fmtDateTime } from "@/lib/dates";
 import { PAGE_SIZE, SALE_STATUS, listSales, parseSalesFilters, type SalesFilters } from "@/lib/admin/sales";
+import { PageHeader } from "@/components/admin/page-header";
 import { PeriodPresets } from "@/components/admin/period-presets";
 
 export const dynamic = "force-dynamic";
@@ -32,86 +33,105 @@ export default async function SalesHistoryPage({ searchParams }: { searchParams:
   const rows = data?.rows ?? [];
   const count = data?.count ?? 0;
   const pages = Math.max(1, Math.ceil(count / PAGE_SIZE));
-  const field = "w-full rounded-lg border border-neutral-300 bg-transparent px-3 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-neutral-900 dark:border-neutral-700 dark:bg-neutral-950 dark:focus:ring-white";
-  const pill = "rounded-full border border-neutral-300 px-4 py-2 text-sm font-medium transition active:scale-95 dark:border-neutral-700";
+  const lbl = "text-xs font-medium text-muted";
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight">Histórico de vendas</h1>
-          <p className="mt-1 text-sm text-neutral-500">Vendas confirmadas. Pedidos ainda não confirmados ficam em Possíveis vendas.</p>
-        </div>
-        <a href={`/admin/vendas/exportar?${qs(f)}`} className={pill}>Exportar CSV</a>
-      </div>
+    <div className="space-y-6">
+      <PageHeader title="Histórico de vendas" subtitle="Vendas confirmadas. Pedidos ainda não confirmados ficam em Possíveis vendas."
+        actions={<a href={`/admin/vendas/exportar?${qs(f)}`} className="adm-btn">Exportar CSV</a>} />
 
       <PeriodPresets basePath="/admin/vendas" extra={extraOf(f)} current={f} />
 
-      <form method="get" className="grid gap-3 rounded-xl border border-neutral-200 p-4 sm:grid-cols-2 lg:grid-cols-6 dark:border-neutral-800">
-        <label className="text-xs text-neutral-500">De<input type="date" name="de" defaultValue={f.de} className={`${field} mt-1`} /></label>
-        <label className="text-xs text-neutral-500">Até<input type="date" name="ate" defaultValue={f.ate} className={`${field} mt-1`} /></label>
-        <label className="text-xs text-neutral-500">Pagamento
-          <select name="metodo" defaultValue={f.metodo} className={`${field} mt-1`}>
+      <form method="get" className="adm-card grid grid-cols-2 gap-3 p-4 lg:grid-cols-6">
+        <label className={lbl}>De<input type="date" name="de" defaultValue={f.de} className="adm-input mt-1" /></label>
+        <label className={lbl}>Até<input type="date" name="ate" defaultValue={f.ate} className="adm-input mt-1" /></label>
+        <label className={`${lbl} col-span-2 lg:col-span-1`}>Pagamento
+          <select name="metodo" defaultValue={f.metodo} className="adm-input mt-1">
             <option value="">Todos</option>
             {(methods ?? []).map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
           </select>
         </label>
-        <label className="text-xs text-neutral-500">Cliente ou pedido<input name="q" defaultValue={f.q} placeholder="Nome ou PED-1001" className={`${field} mt-1`} /></label>
-        <label className="text-xs text-neutral-500">Produto<input name="produto" defaultValue={f.produto} placeholder="Nome do produto" className={`${field} mt-1`} /></label>
-        <div className="flex items-end gap-2">
-          <button className="flex-1 rounded-full bg-neutral-950 px-5 py-2.5 text-sm font-semibold text-white transition active:scale-95 dark:bg-white dark:text-neutral-950">Filtrar</button>
-          <Link href="/admin/vendas" className={pill}>Limpar</Link>
+        <label className={`${lbl} col-span-2 lg:col-span-1`}>Cliente ou pedido<input name="q" defaultValue={f.q} placeholder="Nome ou PED-1001" className="adm-input mt-1" /></label>
+        <label className={`${lbl} col-span-2 lg:col-span-1`}>Produto<input name="produto" defaultValue={f.produto} placeholder="Nome do produto" className="adm-input mt-1" /></label>
+        <div className="col-span-2 flex items-end gap-2 lg:col-span-1">
+          <button className="adm-btn adm-btn-primary flex-1">Filtrar</button>
+          <Link href="/admin/vendas" className="adm-btn">Limpar</Link>
         </div>
       </form>
 
       {error && (
-        <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+        <p role="alert" className="rounded-xl bg-bad/15 p-4 text-sm font-medium text-bad">
           Erro ao carregar as vendas: {error}. Se a mensagem citar “list_sales”, rode o SQL 0005 no Supabase.
         </p>
       )}
 
       {!error && (
-        <p className="text-sm text-neutral-500" aria-live="polite">
-          {count} {count === 1 ? "venda" : "vendas"} no período · Total <strong className="text-neutral-950 dark:text-white">{formatBRL(Number(data?.total ?? 0))}</strong>
+        <p className="text-sm text-muted" aria-live="polite">
+          {count} {count === 1 ? "venda" : "vendas"} no período · Total <strong className="text-base text-ink">{formatBRL(Number(data?.total ?? 0))}</strong>
         </p>
       )}
 
       {!error && rows.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-neutral-300 p-10 text-center text-neutral-500 dark:border-neutral-700">Nenhuma venda encontrada com esses filtros.</p>
+        <p className="adm-card border-dashed p-10 text-center text-muted">Nenhuma venda encontrada com esses filtros.</p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-neutral-200 dark:border-neutral-800">
-          <table className="w-full min-w-[46rem] text-left text-sm">
-            <thead className="bg-neutral-50 text-xs text-neutral-500 dark:bg-neutral-900">
-              <tr><th className="px-4 py-3">Pedido</th><th className="px-4 py-3">Data</th><th className="px-4 py-3">Cliente</th><th className="px-4 py-3">Produtos</th><th className="px-4 py-3">Pagamento</th><th className="px-4 py-3 text-right">Total</th><th className="px-4 py-3">Status</th></tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
-              {rows.map((s) => {
-                const st = SALE_STATUS[s.status] ?? { label: s.status, cls: "bg-neutral-100 text-neutral-800" };
-                const units = s.items.reduce((n, i) => n + i.qty, 0);
-                return (
-                  <tr key={s.id} className="transition hover:bg-neutral-50 dark:hover:bg-neutral-900">
-                    <td className="px-4 py-3 font-medium"><Link href={`/admin/vendas/${s.id}`} className="underline underline-offset-4">{s.code}</Link></td>
-                    <td className="whitespace-nowrap px-4 py-3">{fmtDateTime(s.sold_at)}</td>
-                    <td className="px-4 py-3">{s.customer}</td>
-                    <td className="px-4 py-3 text-neutral-600 dark:text-neutral-400">
-                      {s.items.slice(0, 2).map((i) => i.name).join(", ")}{s.items.length > 2 ? ` +${s.items.length - 2}` : ""} <span className="text-xs">({units} un.)</span>
-                    </td>
-                    <td className="px-4 py-3">{s.method}</td>
-                    <td className="px-4 py-3 text-right font-semibold">{formatBRL(Number(s.total))}</td>
-                    <td className="px-4 py-3"><span className={`rounded-full px-2.5 py-1 text-xs font-medium ${st.cls}`}>{st.label}</span></td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <>
+          {/* Celular: cartões */}
+          <ul className="space-y-3 md:hidden">
+            {rows.map((s) => {
+              const st = SALE_STATUS[s.status] ?? { label: s.status, cls: "bg-surface-2 text-ink" };
+              const units = s.items.reduce((n, i) => n + i.qty, 0);
+              return (
+                <li key={s.id}>
+                  <Link href={`/admin/vendas/${s.id}`} className="adm-card block p-4 transition active:scale-[0.99]">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-black text-ink">{s.code}</p>
+                        <p className="truncate text-sm text-muted">{s.customer}</p>
+                      </div>
+                      <p className="shrink-0 text-lg font-black text-ink">{formatBRL(Number(s.total))}</p>
+                    </div>
+                    <p className="mt-2 line-clamp-2 text-sm text-muted">{s.items.map((i) => i.name).join(", ")} ({units} un.)</p>
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
+                      <span>{fmtDateTime(s.sold_at)} · {s.method}</span>
+                      <span className={`adm-badge ${st.cls}`}>{st.label}</span>
+                    </div>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+
+          {/* Tablet e computador: tabela */}
+          <div className="adm-card hidden overflow-x-auto md:block">
+            <table className="adm-table">
+              <thead><tr><th>Pedido</th><th>Data</th><th>Cliente</th><th>Produtos</th><th>Pagamento</th><th className="text-right">Total</th><th>Status</th></tr></thead>
+              <tbody>
+                {rows.map((s) => {
+                  const st = SALE_STATUS[s.status] ?? { label: s.status, cls: "bg-surface-2 text-ink" };
+                  const units = s.items.reduce((n, i) => n + i.qty, 0);
+                  return (
+                    <tr key={s.id}>
+                      <td className="font-bold"><Link href={`/admin/vendas/${s.id}`} className="text-accent underline underline-offset-4">{s.code}</Link></td>
+                      <td className="whitespace-nowrap">{fmtDateTime(s.sold_at)}</td>
+                      <td>{s.customer}</td>
+                      <td className="text-muted">{s.items.slice(0, 2).map((i) => i.name).join(", ")}{s.items.length > 2 ? ` +${s.items.length - 2}` : ""} <span className="text-xs">({units} un.)</span></td>
+                      <td>{s.method}</td>
+                      <td className="text-right font-bold">{formatBRL(Number(s.total))}</td>
+                      <td><span className={`adm-badge ${st.cls}`}>{st.label}</span></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {pages > 1 && (
-        <nav className="flex items-center justify-between" aria-label="Paginação">
-          {page > 1 ? <Link href={`/admin/vendas?${qs(f, { pagina: String(page - 1) })}`} className={pill}>← Anterior</Link> : <span />}
-          <span className="text-sm text-neutral-500">Página {page} de {pages}</span>
-          {page < pages ? <Link href={`/admin/vendas?${qs(f, { pagina: String(page + 1) })}`} className={pill}>Próxima →</Link> : <span />}
+        <nav className="flex items-center justify-between gap-2" aria-label="Paginação">
+          {page > 1 ? <Link href={`/admin/vendas?${qs(f, { pagina: String(page - 1) })}`} className="adm-btn">← Anterior</Link> : <span />}
+          <span className="text-sm text-muted">Página {page} de {pages}</span>
+          {page < pages ? <Link href={`/admin/vendas?${qs(f, { pagina: String(page + 1) })}`} className="adm-btn">Próxima →</Link> : <span />}
         </nav>
       )}
     </div>

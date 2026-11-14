@@ -11,8 +11,8 @@ export type SalesResult = { count: number; total: number; rows: SaleRow[] };
 
 export const PAGE_SIZE = 20;
 export const SALE_STATUS: Record<string, { label: string; cls: string }> = {
-  completed: { label: "Concluída", cls: "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200" },
-  refunded: { label: "Estornada", cls: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200" },
+  completed: { label: "Concluída", cls: "bg-good/15 text-good" },
+  refunded: { label: "Estornada", cls: "bg-bad/15 text-bad" },
 };
 
 export function parseSalesFilters(sp: Record<string, string | undefined>): SalesFilters {

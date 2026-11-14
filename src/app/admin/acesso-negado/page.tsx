@@ -16,15 +16,15 @@ export default async function AccessDeniedPage() {
   } as const;
 
   return (
-    <main className="flex min-h-dvh items-center justify-center p-6">
-      <div className="w-full max-w-md space-y-4 rounded-2xl border border-neutral-200 p-8 dark:border-neutral-800">
-        <h1 className="text-2xl font-semibold tracking-tight">Acesso negado</h1>
-        <p className="text-neutral-600 dark:text-neutral-400">{reasons[status.state]}</p>
-        <p className="text-sm text-neutral-500">Conta: <strong>{status.user.email}</strong></p>
+    <main className="adm-bg flex min-h-dvh items-center justify-center p-4">
+      <div className="adm-card w-full max-w-md space-y-4 p-6 sm:p-8">
+        <h1 className="text-2xl font-black tracking-tight text-ink">Acesso negado</h1>
+        <p className="text-muted">{reasons[status.state]}</p>
+        <p className="text-sm text-muted">Conta: <strong className="text-ink">{status.user.email}</strong></p>
         {status.state === "error" && (
-          <pre className="overflow-x-auto rounded-lg bg-neutral-100 p-3 text-xs dark:bg-neutral-900">{status.message}</pre>
+          <pre className="overflow-x-auto rounded-xl bg-surface-2 p-3 text-xs text-ink">{status.message}</pre>
         )}
-        <SignOutButton />
+        <SignOutButton className="w-full" />
       </div>
     </main>
   );

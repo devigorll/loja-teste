@@ -1,5 +1,7 @@
 import { requireStaff } from "@/lib/auth/require-staff";
 import { createClient } from "@/lib/supabase/server";
+import { fmtDateTime } from "@/lib/dates";
+import { PageHeader } from "@/components/admin/page-header";
 import { PinForm } from "@/components/admin/pin-form";
 
 export const dynamic = "force-dynamic";
@@ -12,20 +14,20 @@ export default async function SecurityPage() {
   const isSet = Boolean(status?.is_set);
 
   return (
-    <div className="mx-auto max-w-xl">
-      <h1 className="text-2xl font-black tracking-tight">Segurança</h1>
-      <p className="mt-1 text-sm text-neutral-500">
-        O código de 4 dígitos autoriza alterações em pedidos e a confirmação de pedidos editados. Ele é guardado criptografado e conferido pelo banco de dados.
-        Após 5 erros seguidos, fica bloqueado por 15 minutos.
-      </p>
-      <p className="mt-4 text-sm">
-        Situação: <strong>{isSet ? "código definido" : "código ainda não definido"}</strong>
-        {status?.updated_at && <span className="text-neutral-500"> · atualizado em {new Date(status.updated_at).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}</span>}
-      </p>
-      <div className="mt-6">
+    <div className="mx-auto max-w-xl space-y-6">
+      <PageHeader title="Segurança"
+        subtitle="O código de 4 dígitos autoriza alterações em pedidos e a confirmação de pedidos editados. Ele é guardado criptografado e conferido pelo banco de dados. Após 5 erros seguidos, fica bloqueado por 15 minutos." />
+
+      <div className="adm-card flex flex-wrap items-center justify-between gap-2 p-4">
+        <span className="text-sm font-semibold text-muted">Situação do código</span>
+        <span className={`adm-badge ${isSet ? "bg-good/15 text-good" : "bg-warn/15 text-warn"}`}>{isSet ? "Definido" : "Ainda não definido"}</span>
+        {status?.updated_at && <p className="w-full text-xs text-muted">Atualizado em {fmtDateTime(status.updated_at)}</p>}
+      </div>
+
+      <div className="adm-card p-5">
         {profile.role === "admin"
           ? <PinForm isSet={isSet} />
-          : <p className="rounded-lg bg-neutral-100 p-4 text-sm dark:bg-neutral-900">Apenas administradores podem {isSet ? "alterar" : "definir"} o código.</p>}
+          : <p className="text-sm text-muted">Apenas administradores podem {isSet ? "alterar" : "definir"} o código.</p>}
       </div>
     </div>
   );
