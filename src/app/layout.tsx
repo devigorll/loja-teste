@@ -1,14 +1,18 @@
-import { Header } from "@/components/shop/header";
-import { Footer } from "@/components/shop/footer";
-import { getCategories, getStore } from "@/lib/catalog";
+import type { Metadata } from "next";
+import { Archivo } from "next/font/google";
+import "./globals.css";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 
-export default async function PublicLayout({ children }: { children: React.ReactNode }) {
-  const [store, categories] = await Promise.all([getStore(), getCategories()]);
+const font = Archivo({ subsets: ["latin"], variable: "--font-archivo", axes: ["wdth"] });
+
+export const metadata: Metadata = { title: "Vértice Urban", description: "Catálogo digital" };
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      <Header storeName={store.name} categories={categories} />
-      <main>{children}</main>
-      <Footer store={store} />
-    </>
+    <html lang="pt-BR" suppressHydrationWarning>
+      <body className={`${font.variable} font-sans antialiased bg-white text-neutral-950 dark:bg-neutral-950 dark:text-neutral-100`}>
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
+    </html>
   );
 }

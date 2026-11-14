@@ -1,0 +1,42 @@
+// Roda automaticamente antes do build (prebuild). Se algum arquivo estiver no lugar errado
+// ou com o conteúdo de outro arquivo, o build falha com uma mensagem clara
+// e o Vercel mantém no ar a versão anterior do site.
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+
+const root = process.cwd();
+const checks = [
+  ["src/middleware.ts", "export async function middleware", "deve conter a função 'middleware' (não o código de src/lib/supabase/middleware.ts)"],
+  ["src/lib/supabase/middleware.ts", "export async function updateSession", "deve conter 'updateSession'"],
+  ["src/app/layout.tsx", "<html", "deve ser o layout raiz, com <html> e <body>"],
+  ["src/app/(public)/layout.tsx", "PublicLayout", "deve ser o layout do site público (Header/Footer)"],
+  ["src/app/(public)/page.tsx", "HomePage", "deve ser a página inicial (HomePage)"],
+  ["src/app/(public)/carrinho/page.tsx", "CartPage", "deve ser a página da sacola (CartPage)"],
+  ["src/app/admin/(panel)/layout.tsx", "AdminPanelLayout", "deve ser o layout do painel"],
+  ["src/app/admin/(panel)/page.tsx", "AdminDashboardPage", "deve ser o início do painel (AdminDashboardPage)"],
+  ["src/app/admin/(panel)/possiveis-vendas/page.tsx", "PossibleSalesPage", "deve ser a lista de possíveis vendas"],
+  ["src/app/admin/(panel)/possiveis-vendas/[id]/page.tsx", "OrderDetailPage", "deve ser o detalhe do pedido"],
+  ["src/app/admin/(panel)/vendas/page.tsx", "SalesHistoryPage", "deve ser o histórico de vendas"],
+  ["src/app/admin/(panel)/vendas/[id]/page.tsx", "SaleDetailPage", "deve ser o detalhe da venda"],
+  ["src/app/admin/(panel)/caixa/page.tsx", "CashPage", "deve ser o controle de caixa"],
+  ["src/app/admin/(panel)/seguranca/page.tsx", "SecurityPage", "deve ser a página de segurança"],
+];
+const forbidden = ["src/app/(panel)", "src/components/admin/(panel)"];
+
+const problems = [];
+for (const [file, needle, hint] of checks) {
+  const full = join(root, ...file.split("/"));
+  if (!existsSync(full)) { problems.push(`FALTA o arquivo ${file}`); continue; }
+  if (!readFileSync(full, "utf8").includes(needle)) problems.push(`CONTEÚDO ERRADO em ${file}: ${hint}`);
+}
+for (const dir of forbidden) {
+  if (existsSync(join(root, ...dir.split("/")))) problems.push(`PASTA no lugar errado: ${dir} (apague-a)`);
+}
+
+if (problems.length) {
+  console.error("\n❌ Estrutura do projeto incorreta:\n");
+  problems.forEach((p) => console.error("  - " + p));
+  console.error("\nSubstitua a pasta 'src' inteira pela do ZIP mais recente e faça o deploy novamente.\n");
+  process.exit(1);
+}
+console.log("✔ Estrutura do projeto verificada.");
