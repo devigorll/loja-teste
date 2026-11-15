@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { ProductCard } from "@/components/shop/product-card";
 import { getProductBySlug, getRelated, mainImage } from "@/lib/catalog";
+import { BADGE_LABEL } from "@/lib/product-utils";
 import { ProductPurchase } from "./product-purchase";
 
 export const dynamic = "force-dynamic";
@@ -33,7 +34,7 @@ export default async function ProductPage({ params }: Props) {
         </div>
 
         <div className="lg:sticky lg:top-24 lg:self-start">
-          <p className="text-sm text-neutral-500">{product.categories?.name}</p>
+          <p className="flex items-center gap-2 text-sm text-neutral-500">{product.categories?.name}{product.badge && <span className="rounded-full border border-neutral-950 px-2.5 py-0.5 text-xs font-semibold text-neutral-950 dark:border-white dark:text-white">{BADGE_LABEL[product.badge]}</span>}</p>
           <h1 className="mt-1 text-3xl font-black tracking-tight sm:text-4xl">{product.name}</h1>
           <p className="mt-4 max-w-prose text-neutral-600 dark:text-neutral-400">{product.description}</p>
           <div className="mt-8">

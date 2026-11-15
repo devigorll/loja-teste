@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ClipboardList, ExternalLink, LayoutDashboard, Menu, Receipt, ShieldCheck, Store, Wallet, X } from "lucide-react";
+import { Boxes, ClipboardList, ExternalLink, LayoutDashboard, Menu, Receipt, ShieldCheck, Store, Wallet, X } from "lucide-react";
 import { SignOutButton } from "./sign-out-button";
 import { AdminThemeToggle } from "./admin-theme-toggle";
 
@@ -12,6 +12,7 @@ const NAV = [
   { href: "/admin", label: "Dashboard", short: "Início", icon: LayoutDashboard, exact: true, tab: true },
   { href: "/admin/possiveis-vendas", label: "Possíveis vendas", short: "Pedidos", icon: ClipboardList, exact: false, tab: true },
   { href: "/admin/vendas", label: "Histórico de vendas", short: "Vendas", icon: Receipt, exact: false, tab: true },
+  { href: "/admin/estoque", label: "Controle de estoque", short: "Estoque", icon: Boxes, exact: false, tab: true },
   { href: "/admin/caixa", label: "Controle de caixa", short: "Caixa", icon: Wallet, exact: false, tab: true },
   { href: "/admin/seguranca", label: "Segurança", short: "Segurança", icon: ShieldCheck, exact: false, tab: false },
 ];
@@ -114,7 +115,7 @@ export function AdminShell({ name, role, pending, children }: {
 
       {/* Celular/tablet: navegação inferior (alcance do polegar) */}
       <nav aria-label="Navegação principal" className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
-        <ul className="grid grid-cols-5">
+        <ul className="grid grid-cols-6">
           {TABS.map((n) => {
             const on = isActive(pathname, n);
             return (

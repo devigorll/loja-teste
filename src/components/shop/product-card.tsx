@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/lib/catalog";
-import { basePrice, isSoldOut, mainImage } from "@/lib/product-utils";
+import { BADGE_LABEL, basePrice, isSoldOut, mainImage } from "@/lib/product-utils";
 import { formatBRL } from "@/lib/format";
 
 export function ProductCard({ product, priority = false }: { product: Product; priority?: boolean }) {
@@ -15,8 +15,12 @@ export function ProductCard({ product, priority = false }: { product: Product; p
             sizes="(min-width:1024px) 25vw, (min-width:640px) 33vw, 50vw"
             className={`object-cover transition duration-500 group-hover:scale-105 ${soldOut ? "opacity-50" : ""}`} />
         )}
-        {soldOut && <span className="absolute left-3 top-3 rounded-full bg-neutral-950 px-3 py-1 text-xs font-semibold text-white dark:bg-white dark:text-neutral-950">Esgotado</span>}
-        {!soldOut && product.promo_price && <span className="absolute left-3 top-3 rounded-full border border-neutral-950 bg-white px-3 py-1 text-xs font-semibold text-neutral-950 dark:border-white dark:bg-neutral-950 dark:text-white">Promoção</span>}
+        <div className="absolute left-3 top-3 flex flex-col items-start gap-1.5">
+          {soldOut && <span className="rounded-full bg-neutral-950 px-3 py-1 text-xs font-semibold text-white dark:bg-white dark:text-neutral-950">Esgotado</span>}
+          {!soldOut && product.badge === "bestseller" && <span className="rounded-full bg-neutral-950 px-3 py-1 text-xs font-semibold text-white dark:bg-white dark:text-neutral-950">{BADGE_LABEL.bestseller}</span>}
+          {!soldOut && product.badge === "new" && <span className="rounded-full border border-neutral-950 bg-white px-3 py-1 text-xs font-semibold text-neutral-950 dark:border-white dark:bg-neutral-950 dark:text-white">{BADGE_LABEL.new}</span>}
+          {!soldOut && product.promo_price && <span className="rounded-full bg-neutral-200 px-3 py-1 text-xs font-semibold text-neutral-950 dark:bg-neutral-800 dark:text-white">Promoção</span>}
+        </div>
       </div>
       <div className="mt-3 space-y-0.5">
         <p className="font-semibold leading-snug transition group-hover:underline group-hover:underline-offset-4">{product.name}</p>

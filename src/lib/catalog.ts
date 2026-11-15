@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 
-import { basePrice } from "@/lib/product-utils";
+import { basePrice, type BadgeKind } from "@/lib/product-utils";
 export { basePrice, totalStock, isSoldOut, mainImage } from "@/lib/product-utils";
 
 export type Variant = {
@@ -13,6 +13,7 @@ export type Product = {
   categories: { name: string; slug: string } | null;
   product_images: { url: string; alt: string | null; position: number }[];
   product_variants: Variant[];
+  badge?: BadgeKind | null; // selo efetivo (manual do administrador ou automático)
 };
 export type Store = {
   name: string; logo_url: string | null; description: string | null; phone: string | null;
@@ -26,6 +27,14 @@ export type Filters = {
 
 const SELECT =
   "id,name,slug,description,price,promo_price,is_featured,created_at,categories(name,slug),product_images(url,alt,position),product_variants(id,size,color,color_hex,stock,price_override,is_active)";
+
+/** Selos efetivos por produto (função do banco: respeita o selo manual e aplica as regras automáticas). */
+async function getBadgeMap(supabase: Awaited<ReturnType<typeof createClient>>) {
+  const { data } = await supabase.rpc("get_product_badges");
+  const map = new Map<string, BadgeKind>();
+  ((data ?? []) as { product_id: string; badge: BadgeKind | null }[]).forEach((r) => { if (r.badge) map.set(r.product_id, r.badge); });
+  return map;
+}
 
 export async function getStore(): Promise<Store> {
   const supabase = await createClient();
@@ -43,8 +52,8 @@ export async function getProducts(f: Filters = {}): Promise<Product[]> {
   const supabase = await createClient();
   let query = supabase.from("products").select(SELECT).order("created_at", { ascending: false });
   if (f.q) query = query.ilike("name", `%${f.q.replace(/[%,]/g, " ")}%`);
-  const { data } = await query;
-  let list = (data ?? []) as unknown as Product[];
+  const [{ data }, badges] = await Promise.all([query, getBadgeMap(supabase)]);
+  let list = ((data ?? []) as unknown as Product[]).map((p) => ({ ...p, badge: badges.get(p.id) ?? null }));
 
   if (f.categoria) list = list.filter((p) => p.categories?.slug === f.categoria);
   if (f.tamanho) list = list.filter((p) => p.product_variants.some((v) => v.size === f.tamanho && v.stock > 0));
@@ -60,8 +69,10 @@ export async function getProducts(f: Filters = {}): Promise<Product[]> {
 
 export async function getProductBySlug(slug: string) {
   const supabase = await createClient();
-  const { data } = await supabase.from("products").select(SELECT).eq("slug", slug).maybeSingle();
-  return (data as unknown as Product) ?? null;
+  const [{ data }, badges] = await Promise.all([supabase.from("products").select(SELECT).eq("slug", slug).maybeSingle(), getBadgeMap(supabase)]);
+  if (!data) return null;
+  const p = data as unknown as Product;
+  return { ...p, badge: badges.get(p.id) ?? null } as Product;
 }
 
 export async function getRelated(p: Product) {

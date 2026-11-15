@@ -5,3 +5,6 @@ export const totalStock = (p: Product) => p.product_variants.reduce((s, v) => s 
 export const isSoldOut = (p: Product) => totalStock(p) === 0;
 export const mainImage = (p: Product) =>
   [...p.product_images].sort((a, b) => a.position - b.position)[0]?.url ?? null;
+
+export type BadgeKind = "new" | "bestseller";
+export const BADGE_LABEL: Record<BadgeKind, string> = { new: "Novidade", bestseller: "Mais vendido" };

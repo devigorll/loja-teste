@@ -127,9 +127,9 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
         <Kpi label="Ticket médio" value={formatBRL(ticket)} icon={Wallet} delta={<Delta cur={ticket} prev={prevTicket} />} sub="por venda" />
         <Kpi label="Pedidos recebidos" value={String(c?.orders_count ?? 0)} icon={ShoppingBag} delta={<Delta cur={c?.orders_count ?? 0} prev={p?.orders_count ?? 0} />} sub="no período" />
         <Kpi label="Pendentes" value={String(c?.pending_orders ?? 0)} icon={Clock} tone="warn" href="/admin/possiveis-vendas" sub="aguardando confirmação" />
-        <Kpi label="Produtos ativos" value={String(c?.products_count ?? 0)} icon={Package} sub="cadastrados" />
-        <Kpi label="Estoque baixo" value={String(c?.low_stock ?? 0)} icon={PackageMinus} tone="warn" sub="variações" />
-        <Kpi label="Esgotados" value={String(c?.out_of_stock ?? 0)} icon={PackageX} tone="bad" sub="produtos" />
+        <Kpi label="Produtos ativos" value={String(c?.products_count ?? 0)} icon={Package} href="/admin/estoque?aba=disponiveis" sub="disponíveis no site" />
+        <Kpi label="Estoque baixo" value={String(c?.low_stock ?? 0)} icon={PackageMinus} tone="warn" href="/admin/estoque?nivel=baixo" sub="variações" />
+        <Kpi label="Esgotados" value={String(c?.out_of_stock ?? 0)} icon={PackageX} tone="bad" href="/admin/estoque?nivel=zerado" sub="produtos" />
       </section>
 
       {/* Gráficos */}
