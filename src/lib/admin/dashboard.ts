@@ -2,7 +2,10 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { addDays, isISODate, todayISO } from "@/lib/dates";
 
 export type DashboardSummary = {
-  revenue: number; sales_count: number; orders_count: number; pending_orders: number;
+  revenue: number;          // faturamento líquido (entradas − estornos − descontos retroativos)
+  income: number; refunds: number; retro_discounts: number; // entradas, estornos e descontos retroativos
+  original_total: number; sale_discounts: number;          // valor original das vendas e descontos dados na confirmação
+  sales_count: number; orders_count: number; pending_orders: number;
   products_count: number; low_stock: number; out_of_stock: number;
   daily: { day: string; revenue: number; sales: number; orders: number }[];
   payments: { name: string; total: number; count: number }[];

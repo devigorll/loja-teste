@@ -79,8 +79,8 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   const c = cur.data;
   const p = prev.data;
   const err = cur.error ?? prev.error ?? today.error ?? month.error;
-  const ticket = c && c.sales_count > 0 ? c.revenue / c.sales_count : 0;
-  const prevTicket = p && p.sales_count > 0 ? p.revenue / p.sales_count : 0;
+  const ticket = c && c.sales_count > 0 ? c.income / c.sales_count : 0; // entradas ÷ vendas
+  const prevTicket = p && p.sales_count > 0 ? p.income / p.sales_count : 0;
 
   return (
     <div className="space-y-6">
@@ -122,7 +122,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
 
       {/* Indicadores */}
       <section aria-label="Indicadores" className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <Kpi label="Faturamento" value={formatBRL(c?.revenue ?? 0)} icon={TrendingUp} tone="good" delta={<Delta cur={c?.revenue ?? 0} prev={p?.revenue ?? 0} />} sub="no período" />
+        <Kpi label="Faturamento líquido" value={formatBRL(c?.revenue ?? 0)} icon={TrendingUp} tone="good" delta={<Delta cur={c?.revenue ?? 0} prev={p?.revenue ?? 0} />} sub="após descontos e estornos" />
         <Kpi label="Vendas" value={String(c?.sales_count ?? 0)} icon={Receipt} delta={<Delta cur={c?.sales_count ?? 0} prev={p?.sales_count ?? 0} />} sub="confirmadas" />
         <Kpi label="Ticket médio" value={formatBRL(ticket)} icon={Wallet} delta={<Delta cur={ticket} prev={prevTicket} />} sub="por venda" />
         <Kpi label="Pedidos recebidos" value={String(c?.orders_count ?? 0)} icon={ShoppingBag} delta={<Delta cur={c?.orders_count ?? 0} prev={p?.orders_count ?? 0} />} sub="no período" />
@@ -132,12 +132,24 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
         <Kpi label="Esgotados" value={String(c?.out_of_stock ?? 0)} icon={PackageX} tone="bad" href="/admin/estoque?nivel=zerado" sub="produtos" />
       </section>
 
+      {/* Resumo financeiro: de onde vem o faturamento líquido */}
+      <Panel title="Resumo financeiro do período" hint="Mesma base do Controle de caixa: os números sempre batem">
+        <dl className="space-y-2.5 text-sm">
+          <div className="flex items-baseline justify-between gap-3"><dt className="text-muted">Valor original das vendas</dt><dd className="font-semibold text-ink">{formatBRL(c?.original_total ?? 0)}</dd></div>
+          <div className="flex items-baseline justify-between gap-3"><dt className="text-muted">Descontos dados na venda</dt><dd className="font-semibold text-ink">− {formatBRL(c?.sale_discounts ?? 0)}</dd></div>
+          <div className="flex items-baseline justify-between gap-3 border-t border-line pt-2.5"><dt className="font-bold text-ink">Entradas (valor cobrado)</dt><dd className="font-bold text-ink">{formatBRL(c?.income ?? 0)}</dd></div>
+          <div className="flex items-baseline justify-between gap-3"><dt className="text-muted">Estornos</dt><dd className="font-semibold text-ink">− {formatBRL(c?.refunds ?? 0)}</dd></div>
+          <div className="flex items-baseline justify-between gap-3"><dt className="text-muted">Descontos retroativos</dt><dd className="font-semibold text-ink">− {formatBRL(c?.retro_discounts ?? 0)}</dd></div>
+          <div className="flex items-baseline justify-between gap-3 border-t border-line pt-3"><dt className="text-base font-black text-ink">Faturamento líquido</dt><dd className="text-2xl font-black tracking-tight text-ink">{formatBRL(c?.revenue ?? 0)}</dd></div>
+        </dl>
+      </Panel>
+
       {/* Gráficos */}
-      <Panel title="Faturamento por dia" hint="Vendas confirmadas (não inclui estornadas)">
+      <Panel title="Faturamento por dia" hint="Líquido de descontos e estornos, na data de cada lançamento">
         <RevenueChart data={c?.daily ?? []} />
       </Panel>
 
-      <Panel title="Faturamento mensal e anual" hint="Histórico completo das vendas confirmadas: compare meses e anos">
+      <Panel title="Faturamento mensal e anual" hint="Histórico líquido de descontos e estornos: compare meses e anos">
         {history.error ? (
           <p role="alert" className="rounded-xl bg-bad/15 p-4 text-sm font-medium text-bad">
             Não foi possível carregar o histórico: {history.error}. Se a mensagem citar “revenue_history”, rode o SQL 0007 no Supabase.

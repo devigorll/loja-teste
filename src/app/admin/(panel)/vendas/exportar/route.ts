@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getStaffStatus } from "@/lib/auth/require-staff";
-import { SALE_STATUS, listSales, parseSalesFilters } from "@/lib/admin/sales";
+import { SALE_STATUS, adjustBadge, listSales, parseSalesFilters } from "@/lib/admin/sales";
 import { fmtDateTime } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   const { data, error } = await listSales(supabase, f, 5000, 0);
   if (error || !data) return new NextResponse(`Erro ao exportar: ${error ?? "sem dados"}`, { status: 500 });
 
-  const header = ["Pedido", "Data", "Cliente", "Produtos", "Unidades", "Pagamento", "Total (R$)", "Status"];
+  const header = ["Pedido", "Data", "Cliente", "Produtos", "Unidades", "Pagamento", "Valor original (R$)", "Desconto na venda (R$)", "Valor cobrado (R$)", "Estornos (R$)", "Descontos retroativos (R$)", "Valor líquido (R$)", "Status", "Estorno"];
   const lines = data.rows.map((s) =>
     [
       s.code,
@@ -32,8 +32,14 @@ export async function GET(req: NextRequest) {
       s.items.map((i) => `${i.name} (${i.size}/${i.color}) x${i.qty}`).join("; "),
       s.items.reduce((n, i) => n + i.qty, 0),
       s.method,
+      money(s.subtotal),
+      money(s.discount_amount),
       money(s.total),
+      money(s.refunded),
+      money(s.retro),
+      money(s.net),
       SALE_STATUS[s.status]?.label ?? s.status,
+      adjustBadge(s).label,
     ].map(cell).join(";")
   );
 

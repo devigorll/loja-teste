@@ -6,6 +6,9 @@ import { createClient } from "@/lib/supabase/client";
 import { formatBRL } from "@/lib/format";
 import { PinDialog } from "./pin-dialog";
 import { OrderLines, summarize, type CatalogVariant, type EditorLine } from "./order-lines";
+import { DiscountFields } from "./discount-fields";
+import { computeDiscount, type DiscountState } from "@/lib/discount";
+import { parseMoney } from "@/lib/admin/products";
 
 export type { CatalogVariant, EditorLine };
 
@@ -32,9 +35,17 @@ export function OrderEditor({ orderId, wasEdited, readOnly, initial, catalog, st
   const [dialogError, setDialogError] = useState<string | null>(null);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [method, setMethod] = useState(methods[0]?.id ?? "");
+  const [discount, setDiscount] = useState<DiscountState>({ mode: "none", raw: "" });
 
   const { parsed, valid, total } = summarize(lines);
   const dirty = sig(lines) !== sig(initial);
+
+  // Desconto na confirmação (prévia; o banco valida e recalcula)
+  const disc = computeDiscount(discount, total, total);
+  const discountActive = discount.mode !== "none";
+  const discountOk = !discountActive || (disc.amount > 0 && !disc.error);
+  const finalTotal = Math.round((total - disc.amount) * 100) / 100;
+  const needsPin = wasEdited || discountActive;
 
   async function save(pin: string) {
     setBusy(true); setDialogError(null);
@@ -51,7 +62,11 @@ export function OrderEditor({ orderId, wasEdited, readOnly, initial, catalog, st
 
   async function doConfirm(pin: string | null) {
     setBusy(true); setDialogError(null);
-    const r = await call("confirm_sale", { p_order_id: orderId, p_payment_method_id: method, p_pin: pin });
+    const r = await call("confirm_sale", {
+      p_order_id: orderId, p_payment_method_id: method, p_pin: pin,
+      p_discount_type: discountActive ? discount.mode : null,
+      p_discount_value: discountActive ? parseMoney(discount.raw) : null,
+    });
     setBusy(false);
     if (!r.ok) {
       if (dialog) setDialogError(r.error ?? "Erro ao confirmar.");
@@ -65,8 +80,9 @@ export function OrderEditor({ orderId, wasEdited, readOnly, initial, catalog, st
   function startConfirm() {
     setMessage(null);
     if (!method) return;
-    if (wasEdited) { setDialogError(null); setDialog("confirm"); return; }
-    if (window.confirm(`Confirmar a venda de ${formatBRL(total)}?`)) void doConfirm(null);
+    if (!discountOk) return;
+    if (needsPin) { setDialogError(null); setDialog("confirm"); return; }
+    if (window.confirm(`Confirmar a venda de ${formatBRL(finalTotal)}?`)) void doConfirm(null);
   }
 
   async function cancelOrder() {
@@ -109,11 +125,21 @@ export function OrderEditor({ orderId, wasEdited, readOnly, initial, catalog, st
             </div>
           </fieldset>
 
+          <fieldset className="space-y-3">
+            <legend className="mb-2 text-sm font-semibold text-ink">Desconto</legend>
+            <DiscountFields value={discount} onChange={setDiscount} base={total} max={total} idPrefix="confirm-disc" />
+            <dl className="space-y-1.5 rounded-xl bg-surface-2 p-3.5 text-sm" aria-live="polite">
+              <div className="flex justify-between"><dt className="text-muted">Valor original</dt><dd className="font-semibold text-ink">{formatBRL(total)}</dd></div>
+              <div className="flex justify-between"><dt className="text-muted">Desconto{disc.percent !== null ? ` (${String(disc.percent).replace(".", ",")}%)` : ""}</dt><dd className="font-semibold text-ink">{disc.amount > 0 ? `− ${formatBRL(disc.amount)}` : formatBRL(0)}</dd></div>
+              <div className="flex justify-between border-t border-line pt-2"><dt className="font-bold text-ink">Valor final</dt><dd className="text-xl font-black text-ink">{formatBRL(finalTotal)}</dd></div>
+            </dl>
+          </fieldset>
+
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <button type="button" onClick={startConfirm} disabled={busy || dirty || !valid || !method} className="adm-btn adm-btn-good">Confirmar venda</button>
+            <button type="button" onClick={startConfirm} disabled={busy || dirty || !valid || !method || !discountOk} className="adm-btn adm-btn-good">Confirmar venda</button>
             <button type="button" onClick={cancelOrder} disabled={busy} className="adm-btn adm-btn-danger">Cancelar pedido</button>
             {dirty && <span className="text-xs text-muted">Salve as alterações antes de confirmar.</span>}
-            {!dirty && wasEdited && <span className="text-xs text-muted">Pedido editado: a confirmação exige o código.</span>}
+            {!dirty && needsPin && <span className="text-xs text-muted">{wasEdited ? "Pedido editado" : "Venda com desconto"}: a confirmação exige o código.</span>}
           </div>
         </div>
       )}
@@ -121,7 +147,7 @@ export function OrderEditor({ orderId, wasEdited, readOnly, initial, catalog, st
       {dialog && (
         <PinDialog
           title={dialog === "save" ? "Autorizar alterações" : "Autorizar confirmação"}
-          description={dialog === "save" ? "Digite o código de 4 dígitos para salvar as alterações do pedido." : `Pedido editado. Digite o código para confirmar a venda de ${formatBRL(total)}.`}
+          description={dialog === "save" ? "Digite o código de 4 dígitos para salvar as alterações do pedido." : `${wasEdited ? "Pedido editado" : "Venda com desconto"}. Digite o código para confirmar a venda de ${formatBRL(finalTotal)}${discountActive ? ` (desconto de ${formatBRL(disc.amount)})` : ""}.`}
           error={dialogError} loading={busy}
           onCancel={() => { if (!busy) setDialog(null); }}
           onSubmit={(pin) => (dialog === "save" ? void save(pin) : void doConfirm(pin))}

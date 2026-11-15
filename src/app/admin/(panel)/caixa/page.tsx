@@ -3,17 +3,20 @@ import { Wallet } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { formatBRL } from "@/lib/format";
 import { dayEnd, dayStart, fmtDateTime, fmtDay, isISODate, monthStart, todayISO } from "@/lib/dates";
+import { ADJUST_KIND_LABEL } from "@/lib/admin/sales";
 import { PageHeader } from "@/components/admin/page-header";
 import { PeriodPresets } from "@/components/admin/period-presets";
 
 export const dynamic = "force-dynamic";
 
 type Summary = {
-  net: number; income: number; refunds: number; sales_count: number;
+  net: number; income: number; refunds: number; retro_discounts: number; sale_discounts: number; sales_count: number;
   by_method: { method: string; total: number; count: number }[];
   daily: { day: string; total: number; count: number }[];
 };
-type Tx = { id: string; type: string; amount: number; description: string | null; created_at: string; payment_methods: { name: string } | null };
+type Tx = { id: string; type: string; amount: number; description: string | null; created_at: string; payment_methods: { name: string } | null; sale_adjustments: { kind: string } | null };
+
+const txLabel = (m: Tx) => (m.type === "income" ? "Entrada" : ADJUST_KIND_LABEL[m.sale_adjustments?.kind ?? ""] ?? "Estorno");
 
 const lbl = "text-xs font-bold uppercase tracking-wide text-muted";
 
@@ -31,7 +34,7 @@ export default async function CashPage({ searchParams }: { searchParams: Promise
     supabase.rpc("cash_summary", { p_from: de, p_to: ate }),
     supabase.from("payment_methods").select("id, name, is_active").order("position"),
     supabase.from("financial_transactions")
-      .select("id, type, amount, description, created_at, payment_methods(name)")
+      .select("id, type, amount, description, created_at, payment_methods(name), sale_adjustments(kind)")
       .gte("created_at", dayStart(de)).lte("created_at", dayEnd(ate))
       .order("created_at", { ascending: false }).limit(100),
   ]);
@@ -47,7 +50,7 @@ export default async function CashPage({ searchParams }: { searchParams: Promise
   (methods.data ?? []).filter((m) => m.is_active).forEach((m) => byMethod.set(m.name, { total: 0, count: 0 }));
   (sRange?.by_method ?? []).forEach((m) => byMethod.set(m.method, { total: Number(m.total), count: Number(m.count) }));
 
-  const ticket = sRange && sRange.sales_count > 0 ? Number(sRange.income) / Number(sRange.sales_count) : 0;
+  const ticket = sRange && sRange.sales_count > 0 ? Number(sRange.income) / Number(sRange.sales_count) : 0; // entradas ÷ vendas
 
   return (
     <div className="space-y-8">
@@ -85,12 +88,14 @@ export default async function CashPage({ searchParams }: { searchParams: Promise
           <button className="adm-btn adm-btn-primary col-span-2 sm:col-span-1">Aplicar</button>
         </form>
 
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
           <div className="adm-card p-4"><p className={lbl}>Saldo</p><p className="mt-2 text-2xl font-black text-ink">{formatBRL(Number(sRange?.net ?? 0))}</p></div>
-          <div className="adm-card p-4"><p className={lbl}>Entradas</p><p className="mt-2 text-2xl font-black text-good">{formatBRL(Number(sRange?.income ?? 0))}</p></div>
-          <div className="adm-card p-4"><p className={lbl}>Estornos</p><p className="mt-2 text-2xl font-black text-bad">{formatBRL(Number(sRange?.refunds ?? 0))}</p></div>
+          <div className="adm-card p-4"><p className={lbl}>Entradas</p><p className="mt-2 text-2xl font-black text-ink">{formatBRL(Number(sRange?.income ?? 0))}</p></div>
+          <div className="adm-card p-4"><p className={lbl}>Estornos</p><p className="mt-2 text-2xl font-black text-ink">{formatBRL(Number(sRange?.refunds ?? 0))}</p></div>
+          <div className="adm-card p-4"><p className={lbl}>Descontos retroativos</p><p className="mt-2 text-2xl font-black text-ink">{formatBRL(Number(sRange?.retro_discounts ?? 0))}</p></div>
           <div className="adm-card p-4"><p className={lbl}>Vendas · ticket</p><p className="mt-2 text-2xl font-black text-ink">{sRange?.sales_count ?? 0}</p><p className="text-xs text-muted">{formatBRL(ticket)} em média</p></div>
         </div>
+        <p className="text-xs text-muted">Saldo = entradas − estornos − descontos retroativos. As entradas já têm abatidos os descontos dados na confirmação das vendas ({formatBRL(Number(sRange?.sale_discounts ?? 0))} no período). Os lançamentos entram na data em que foram feitos.</p>
       </section>
 
       <section className="space-y-4">
@@ -135,9 +140,9 @@ export default async function CashPage({ searchParams }: { searchParams: Promise
               {tx.map((m) => (
                 <li key={m.id} className="adm-card flex items-start justify-between gap-3 p-4">
                   <div className="min-w-0">
-                    <p className="font-bold text-ink">{m.description ?? (m.type === "income" ? "Entrada" : "Estorno")}</p>
+                    <p className="font-bold text-ink">{m.description ?? txLabel(m)}</p>
                     <p className="text-xs text-muted">{fmtDateTime(m.created_at)} · {m.payment_methods?.name ?? "—"}</p>
-                    <span className={`adm-badge mt-2 ${m.type === "income" ? "bg-good/15 text-good" : "bg-bad/15 text-bad"}`}>{m.type === "income" ? "Entrada" : "Estorno"}</span>
+                    <span className={`adm-badge mt-2 ${m.type === "income" ? "bg-good/15 text-good" : "bg-warn/15 text-warn"}`}>{txLabel(m)}</span>
                   </div>
                   <p className={`shrink-0 text-lg font-black ${Number(m.amount) < 0 ? "text-bad" : "text-ink"}`}>{formatBRL(Number(m.amount))}</p>
                 </li>
@@ -151,7 +156,7 @@ export default async function CashPage({ searchParams }: { searchParams: Promise
                   {tx.map((m) => (
                     <tr key={m.id}>
                       <td className="whitespace-nowrap">{fmtDateTime(m.created_at)}</td>
-                      <td><span className={`adm-badge ${m.type === "income" ? "bg-good/15 text-good" : "bg-bad/15 text-bad"}`}>{m.type === "income" ? "Entrada" : "Estorno"}</span></td>
+                      <td><span className={`adm-badge ${m.type === "income" ? "bg-good/15 text-good" : "bg-warn/15 text-warn"}`}>{txLabel(m)}</span></td>
                       <td>{m.description ?? "—"}</td>
                       <td>{m.payment_methods?.name ?? "—"}</td>
                       <td className={`text-right font-bold ${Number(m.amount) < 0 ? "text-bad" : ""}`}>{formatBRL(Number(m.amount))}</td>
