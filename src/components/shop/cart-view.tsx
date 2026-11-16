@@ -10,6 +10,9 @@ import { useCart } from "@/lib/store/cart";
 import { formatBRL } from "@/lib/format";
 import { buildWhatsAppUrl, type OrderResult } from "@/lib/whatsapp";
 
+// Destino do "Continuar comprando": tela inicial da loja. Para mudar o destino no futuro, basta alterar aqui.
+const HOME_HREF = "/";
+
 type VariantRow = {
   id: string; stock: number; price_override: number | null;
   products: { price: number; promo_price: number | null; is_active: boolean } | null;
@@ -89,6 +92,14 @@ export function CartView({ whatsapp }: { whatsapp: string | null }) {
     idemKey.current = crypto.randomUUID();
     setDone({ code: order.code, url });
     window.location.assign(url);
+  }
+
+  function handleClear() {
+    if (sending || items.length === 0) return;
+    if (!window.confirm("Remover todos os produtos da sacola?")) return;
+    clear();          // esvazia a sacola (e a memória do navegador); contador e valores atualizam sozinhos
+    setNotice(null);
+    setError(null);
   }
 
   if (!mounted) return <div className="mx-auto min-h-[60dvh] max-w-5xl px-4 py-10 sm:px-6" />;
@@ -173,6 +184,12 @@ export function CartView({ whatsapp }: { whatsapp: string | null }) {
           {error && <p role="alert" className="rounded-lg border border-neutral-400 bg-neutral-100 p-3 text-sm font-semibold text-neutral-900 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100">{error}</p>}
           <button type="submit" disabled={sending} className="w-full rounded-full bg-neutral-950 py-3.5 font-semibold text-white transition hover:bg-neutral-800 active:scale-[0.98] disabled:opacity-60 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200">
             {sending ? "Registrando pedido..." : "Finalizar compra pelo WhatsApp"}
+          </button>
+          <Link href={HOME_HREF} className="block w-full rounded-full border border-neutral-300 py-3 text-center text-sm font-semibold transition hover:bg-neutral-100 active:scale-[0.98] dark:border-neutral-700 dark:hover:bg-neutral-900">
+            Continuar comprando
+          </Link>
+          <button type="button" onClick={handleClear} disabled={sending} className="flex w-full items-center justify-center gap-2 rounded-full py-2.5 text-sm font-semibold text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-950 active:scale-[0.98] disabled:opacity-60 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-white">
+            <Trash2 size={16} /> Limpar carrinho
           </button>
           <p className="text-xs text-neutral-500">Você revisa a mensagem no WhatsApp antes de enviar. O pagamento é combinado direto com a loja.</p>
         </form>

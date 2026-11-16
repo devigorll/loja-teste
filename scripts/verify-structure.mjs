@@ -35,6 +35,7 @@ const checks = [
   ["src/components/admin/sale-adjustment-panel.tsx", "SaleAdjustmentPanel", "deve ser o painel Inserir estorno"],
   ["src/components/admin/discount-fields.tsx", "DiscountFields", "deve ser o campo de desconto"],
   ["src/lib/discount.ts", "computeDiscount", "deve conter o cálculo de desconto"],
+  ["src/components/admin/collapsible-section.tsx", "CollapsibleSection", "deve ser a seção que expande e recolhe"],
   ["src/app/admin/(panel)/possiveis-vendas/page.tsx", "PossibleSalesPage", "deve ser a lista de possíveis vendas"],
   ["src/app/admin/(panel)/possiveis-vendas/[id]/page.tsx", "OrderDetailPage", "deve ser o detalhe do pedido"],
   ["src/app/admin/(panel)/vendas/page.tsx", "SalesHistoryPage", "deve ser o histórico de vendas"],

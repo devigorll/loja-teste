@@ -7,6 +7,7 @@ import { formatBRL } from "@/lib/format";
 import { PageHeader } from "@/components/admin/page-header";
 import { ProductActions } from "@/components/admin/product-actions";
 import { BadgeRulesForm, type BadgeRules } from "@/components/admin/badge-rules-form";
+import { CollapsibleSection } from "@/components/admin/collapsible-section";
 import { BADGE_LABEL, PRODUCT_SELECT, STATUS_LABEL, statusOf, stockInfo, type AdminProduct } from "@/lib/admin/products";
 
 export const dynamic = "force-dynamic";
@@ -116,65 +117,64 @@ export default async function StockPage({ searchParams }: { searchParams: Promis
         </div>
       </form>
 
-      <p className="text-sm text-muted" aria-live="polite">{list.length} {list.length === 1 ? "produto" : "produtos"}</p>
-
-      {!error && list.length === 0 ? (
-        <div className="adm-card space-y-4 border-dashed p-10 text-center">
-          <p className="text-muted">Nenhum produto neste filtro.</p>
-          <Link href="/admin/estoque/novo" className="adm-btn adm-btn-primary">Cadastrar produto</Link>
-        </div>
-      ) : (
-        <ul className="grid gap-4 xl:grid-cols-2">
-          {list.map((p) => {
-            const st = statusOf(p);
-            const info = stockInfo(p);
-            const img = [...p.product_images].sort((a, b) => a.position - b.position)[0]?.url;
-            const manual = p.badge_override !== null;
-            const eff = p.badge_override === "none" ? null : p.badge_override ?? (st === "active" ? badgeMap.get(p.id) ?? null : null);
-            return (
-              <li key={p.id} className={`adm-card overflow-hidden ${st === "archived" ? "opacity-80" : ""}`}>
-                <div className="flex gap-4 p-4">
-                  <Link href={`/admin/estoque/${p.id}`} className="relative h-28 w-24 shrink-0 overflow-hidden rounded-xl bg-surface-2" aria-label={`Editar ${p.name}`}>
-                    {img ? <Image src={img} alt={p.name} fill unoptimized sizes="96px" className="object-cover" /> : <span className="grid h-full place-items-center text-muted"><ImageOff size={24} /></span>}
-                  </Link>
-                  <div className="min-w-0 flex-1 space-y-2">
-                    <div>
-                      <Link href={`/admin/estoque/${p.id}`} className="block truncate font-bold text-ink hover:underline">{p.name}</Link>
-                      <p className="text-xs text-muted">{p.categories?.name ?? "Sem categoria"} · {formatBRL(Number(p.promo_price ?? p.price))}{p.promo_price ? " (promo)" : ""}</p>
+      <CollapsibleSection variant="list" defaultOpen title={<>Produtos cadastrados <span className="ml-1.5 font-normal text-muted" aria-live="polite">({list.length})</span></>}>
+        {!error && list.length === 0 ? (
+          <div className="adm-card space-y-4 border-dashed p-10 text-center">
+            <p className="text-muted">Nenhum produto neste filtro.</p>
+            <Link href="/admin/estoque/novo" className="adm-btn adm-btn-primary">Cadastrar produto</Link>
+          </div>
+        ) : (
+          <ul className="grid gap-4 xl:grid-cols-2">
+            {list.map((p) => {
+              const st = statusOf(p);
+              const info = stockInfo(p);
+              const img = [...p.product_images].sort((a, b) => a.position - b.position)[0]?.url;
+              const manual = p.badge_override !== null;
+              const eff = p.badge_override === "none" ? null : p.badge_override ?? (st === "active" ? badgeMap.get(p.id) ?? null : null);
+              return (
+                <li key={p.id} className={`adm-card overflow-hidden ${st === "archived" ? "opacity-80" : ""}`}>
+                  <div className="flex gap-4 p-4">
+                    <Link href={`/admin/estoque/${p.id}`} className="relative h-28 w-24 shrink-0 overflow-hidden rounded-xl bg-surface-2" aria-label={`Editar ${p.name}`}>
+                      {img ? <Image src={img} alt={p.name} fill unoptimized sizes="96px" className="object-cover" /> : <span className="grid h-full place-items-center text-muted"><ImageOff size={24} /></span>}
+                    </Link>
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <div>
+                        <Link href={`/admin/estoque/${p.id}`} className="block truncate font-bold text-ink hover:underline">{p.name}</Link>
+                        <p className="text-xs text-muted">{p.categories?.name ?? "Sem categoria"} · {formatBRL(Number(p.promo_price ?? p.price))}{p.promo_price ? " (promo)" : ""}</p>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        <span className={`adm-badge ${st === "active" ? "bg-ink text-surface" : "bg-surface-2 text-muted"}`}>{STATUS_LABEL[st]}</span>
+                        {info.out && st !== "archived" && <span className="adm-badge bg-bad/15 text-bad">Esgotado</span>}
+                        {info.low && <span className="adm-badge bg-warn/15 text-warn">Estoque baixo</span>}
+                        {p.badge_override === "none" ? <span className="adm-badge bg-surface-2 text-muted">Sem selo (manual)</span>
+                          : eff && <span className="adm-badge border border-line text-ink">{BADGE_LABEL[eff as "new" | "bestseller"]} · {manual ? "manual" : "auto"}</span>}
+                      </div>
+                      <p className="text-sm text-ink">Estoque total: <strong>{info.total}</strong></p>
+                      <ul className="flex flex-wrap gap-1.5" aria-label="Estoque por variação">
+                        {p.product_variants.slice(0, 8).map((v) => (
+                          <li key={v.id} className={`rounded-lg border border-line px-2 py-0.5 text-xs ${v.is_active ? "text-ink" : "text-muted line-through"} ${v.stock === 0 ? "bg-surface-2 text-muted" : ""}`}>
+                            {v.size} · {v.color}: <strong>{v.stock}</strong>
+                          </li>
+                        ))}
+                        {p.product_variants.length > 8 && <li className="px-1 text-xs text-muted">+{p.product_variants.length - 8}</li>}
+                      </ul>
                     </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      <span className={`adm-badge ${st === "active" ? "bg-ink text-surface" : "bg-surface-2 text-muted"}`}>{STATUS_LABEL[st]}</span>
-                      {info.out && st !== "archived" && <span className="adm-badge bg-bad/15 text-bad">Esgotado</span>}
-                      {info.low && <span className="adm-badge bg-warn/15 text-warn">Estoque baixo</span>}
-                      {p.badge_override === "none" ? <span className="adm-badge bg-surface-2 text-muted">Sem selo (manual)</span>
-                        : eff && <span className="adm-badge border border-line text-ink">{BADGE_LABEL[eff as "new" | "bestseller"]} · {manual ? "manual" : "auto"}</span>}
-                    </div>
-                    <p className="text-sm text-ink">Estoque total: <strong>{info.total}</strong></p>
-                    <ul className="flex flex-wrap gap-1.5" aria-label="Estoque por variação">
-                      {p.product_variants.slice(0, 8).map((v) => (
-                        <li key={v.id} className={`rounded-lg border border-line px-2 py-0.5 text-xs ${v.is_active ? "text-ink" : "text-muted line-through"} ${v.stock === 0 ? "bg-surface-2 text-muted" : ""}`}>
-                          {v.size} · {v.color}: <strong>{v.stock}</strong>
-                        </li>
-                      ))}
-                      {p.product_variants.length > 8 && <li className="px-1 text-xs text-muted">+{p.product_variants.length - 8}</li>}
-                    </ul>
                   </div>
-                </div>
-                <div className="flex flex-col gap-3 border-t border-line bg-surface-2 p-3 sm:flex-row sm:items-center sm:justify-between">
-                  <Link href={`/admin/estoque/${p.id}`} className="adm-btn adm-btn-primary">Editar e ajustar estoque</Link>
-                  <ProductActions product={{ id: p.id, name: p.name, status: st }} isAdmin={isAdmin} />
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+                  <div className="flex flex-col gap-3 border-t border-line bg-surface-2 p-3 sm:flex-row sm:items-center sm:justify-between">
+                    <Link href={`/admin/estoque/${p.id}`} className="adm-btn adm-btn-primary">Editar e ajustar estoque</Link>
+                    <ProductActions product={{ id: p.id, name: p.name, status: st }} isAdmin={isAdmin} />
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </CollapsibleSection>
 
-      <details className="adm-card p-4 sm:p-5">
-        <summary className="cursor-pointer text-base font-bold text-ink">Regras dos selos automáticos</summary>
+      <CollapsibleSection title="Regras dos selos automáticos">
         <p className="mb-4 mt-2 text-sm text-muted">“Novidade” vale por alguns dias após o cadastro. “Mais vendido” vai para os produtos de maior volume de vendas confirmadas. Um selo escolhido manualmente em um produto sempre vence estas regras.</p>
         <BadgeRulesForm initial={rules} canEdit={isAdmin} />
-      </details>
+      </CollapsibleSection>
     </div>
   );
 }
