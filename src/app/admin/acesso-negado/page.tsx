@@ -12,6 +12,7 @@ export default async function AccessDeniedPage() {
   const reasons = {
     "no-profile": "Seu login existe, mas ele ainda não foi cadastrado como membro da equipe (falta a linha em “profiles”).",
     inactive: "Seu usuário está desativado. Peça a um administrador para reativá-lo.",
+    "store-suspended": "A loja associada a esta conta está suspensa. Entre em contato com o suporte da plataforma.",
     error: "Não foi possível verificar suas permissões por um erro no banco de dados.",
   } as const;
 

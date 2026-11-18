@@ -112,7 +112,7 @@ export function OrderLines({ lines, onChange, catalog, stock, readOnly = false, 
         </div>
       )}
 
-      <div className="adm-card flex items-baseline justify-between p-4 sm:p-5">
+      <div className="adm-card flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 p-4 sm:p-5">
         <span className="text-sm font-semibold text-muted">Total do pedido</span>
         <span className="text-3xl font-black tracking-tight text-ink">{formatBRL(total)}</span>
       </div>

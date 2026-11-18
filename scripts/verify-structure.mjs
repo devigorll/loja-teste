@@ -36,6 +36,8 @@ const checks = [
   ["src/components/admin/discount-fields.tsx", "DiscountFields", "deve ser o campo de desconto"],
   ["src/lib/discount.ts", "computeDiscount", "deve conter o cálculo de desconto"],
   ["src/components/admin/collapsible-section.tsx", "CollapsibleSection", "deve ser a seção que expande e recolhe"],
+  ["src/lib/store-context.ts", "getCurrentStore", "deve conter a identificação da loja atual"],
+  ["src/lib/supabase/public.ts", "createPublicClient", "deve ser o cliente público (sem login)"],
   ["src/app/admin/(panel)/possiveis-vendas/page.tsx", "PossibleSalesPage", "deve ser a lista de possíveis vendas"],
   ["src/app/admin/(panel)/possiveis-vendas/[id]/page.tsx", "OrderDetailPage", "deve ser o detalhe do pedido"],
   ["src/app/admin/(panel)/vendas/page.tsx", "SalesHistoryPage", "deve ser o histórico de vendas"],

@@ -1,12 +1,16 @@
-# Loja — Etapas 1 a 8 + ajustes finais + controle de estoque + descontos e estornos (Next.js + Supabase + Vercel)
+# Loja — sistema multi-loja (Next.js + Supabase + Vercel)
 
-## Como atualizar o repositório (IMPORTANTE)
-1. Apague as pastas `src`, `scripts` e `supabase` do repositório e coloque as deste ZIP (substituição de PASTAS inteiras, não arquivo por arquivo).
-2. Copie também `package.json` e os demais arquivos soltos.
-3. Faça o commit. O build roda `scripts/verify-structure.mjs` antes e falha com mensagem clara se algum arquivo estiver no lugar errado.
+Leia **docs/MULTI-LOJA.md** (arquitetura, migração, criação de lojas, dados de demonstração, verificação de isolamento e deploy).
 
-## Banco (Supabase > SQL Editor), rodar uma vez cada, em ordem
-0001_schema, 0002_seed, 0003_orders_checkout, 0004_admin_sales, 0005_sales_history_cash, 0006_dashboard, 0007_final_adjustments, 0008_stock_module, 0009_discounts_refunds
+## Atualizar o repositório
+1. Apague `src`, `scripts`, `supabase` e `docs` do repositório e envie as pastas deste ZIP (pastas inteiras) + `package.json` e arquivos soltos.
+2. Commit. O build confere a estrutura (`scripts/verify-structure.mjs`).
+
+## Banco (Supabase > SQL Editor), uma vez cada, em ordem
+0001_schema, 0002_seed, 0003_orders_checkout, 0004_admin_sales, 0005_sales_history_cash, 0006_dashboard,
+0007_final_adjustments, 0008_stock_module, 0009_discounts_refunds,
+**0010_multitenant_structure, 0011_multitenant_functions, 0012_platform_admin** (multi-loja; veja o guia)
+Opcionais: `tests/check_multitenant.sql`, `tests/isolation_test.sql`, `demo/001_demo_sales.sql`, `demo/002_remove_demo_data.sql`.
 
 ## Variáveis no Vercel
-NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY
+NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY (opcional: STORE_SLUG)

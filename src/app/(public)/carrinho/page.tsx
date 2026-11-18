@@ -8,5 +8,5 @@ export const dynamic = "force-dynamic";
 
 export default async function CartPage() {
   const store = await getStore();
-  return <CartView whatsapp={normalizeWhatsApp(store.whatsapp)} />;
+  return <CartView storeId={store.store_id} whatsapp={normalizeWhatsApp(store.whatsapp)} />;
 }

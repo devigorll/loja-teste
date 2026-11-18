@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Minus, Plus, Trash2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { createPublicClient } from "@/lib/supabase/public";
 import { useCart } from "@/lib/store/cart";
 import { formatBRL } from "@/lib/format";
 import { buildWhatsAppUrl, type OrderResult } from "@/lib/whatsapp";
@@ -18,7 +18,7 @@ type VariantRow = {
   products: { price: number; promo_price: number | null; is_active: boolean } | null;
 };
 
-export function CartView({ whatsapp }: { whatsapp: string | null }) {
+export function CartView({ whatsapp, storeId }: { whatsapp: string | null; storeId: string }) {
   const { items, setQty, remove, clear, sync } = useCart();
   const [mounted, setMounted] = useState(false);
   const [name, setName] = useState("");
@@ -34,7 +34,7 @@ export function CartView({ whatsapp }: { whatsapp: string | null }) {
   const refresh = useCallback(async () => {
     const ids = useCart.getState().items.map((i) => i.variantId);
     if (ids.length === 0) return;
-    const { data, error } = await createClient()
+    const { data, error } = await createPublicClient()
       .from("product_variants")
       .select("id, stock, price_override, products(price, promo_price, is_active)")
       .in("id", ids);
@@ -73,7 +73,8 @@ export function CartView({ whatsapp }: { whatsapp: string | null }) {
       return;
     }
     setSending(true);
-    const { data, error: rpcError } = await createClient().rpc("create_order", {
+    const { data, error: rpcError } = await createPublicClient().rpc("create_order", {
+      p_store_id: storeId,
       p_customer_name: name,
       p_customer_phone: phone,
       p_notes: notes,

@@ -68,7 +68,7 @@ export default async function EditProductPage({ params, searchParams }: { params
           <h2 className="text-base font-bold text-ink">Fotos</h2>
           <p className="text-sm text-muted">A primeira foto é a principal (aparece no catálogo). Use “Trocar” para substituir uma foto por outra.</p>
         </div>
-        <ProductImages productId={p.id} productName={p.name} images={p.product_images} />
+        <ProductImages productId={p.id} productName={p.name} images={p.product_images} storeId={profile.store_id} />
       </section>
 
       <section className="adm-card space-y-4 p-4 sm:p-5">

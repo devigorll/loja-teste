@@ -17,7 +17,7 @@ function validate(file: File): string | null {
 }
 
 /** Fotos do produto: enviar, trocar, remover e escolher a principal (a primeira aparece no site). */
-export function ProductImages({ productId, productName, images }: { productId: string; productName: string; images: AdminImage[] }) {
+export function ProductImages({ productId, productName, images, storeId }: { productId: string; productName: string; images: AdminImage[]; storeId: string }) {
   const router = useRouter();
   const addRef = useRef<HTMLInputElement>(null);
   const replaceRef = useRef<HTMLInputElement>(null);
@@ -30,7 +30,7 @@ export function ProductImages({ productId, productName, images }: { productId: s
 
   async function uploadFile(file: File) {
     const supabase = createClient();
-    const path = `products/${productId}/${crypto.randomUUID()}.${EXT[file.type]}`;
+    const path = `${storeId}/products/${productId}/${crypto.randomUUID()}.${EXT[file.type]}`; // cada loja escreve só na própria pasta
     const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, file, { contentType: file.type, upsert: false, cacheControl: "31536000" });
     if (upErr) throw new Error(upErr.message);
     return { path, url: supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl };

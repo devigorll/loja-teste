@@ -14,7 +14,7 @@ const FIELDS: { key: keyof BadgeRules; label: string; hint: string; max: number 
 ];
 
 /** Regras dos selos automáticos. Só administradores salvam. O selo manual de um produto sempre vence a regra. */
-export function BadgeRulesForm({ initial, canEdit }: { initial: BadgeRules; canEdit: boolean }) {
+export function BadgeRulesForm({ initial, canEdit, storeId }: { initial: BadgeRules; canEdit: boolean; storeId: string }) {
   const router = useRouter();
   const [v, setV] = useState<Record<keyof BadgeRules, string>>({
     new_badge_days: String(initial.new_badge_days), bestseller_top_n: String(initial.bestseller_top_n),
@@ -33,7 +33,7 @@ export function BadgeRulesForm({ initial, canEdit }: { initial: BadgeRules; canE
       out[f.key] = n;
     }
     setBusy(true);
-    const { error } = await createClient().from("store_settings").update(out).eq("id", 1);
+    const { error } = await createClient().from("store_settings").update(out).eq("store_id", storeId);
     setBusy(false);
     if (error) { setMsg({ ok: false, text: error.message }); return; }
     setMsg({ ok: true, text: "Regras salvas. Os selos do site já usam os novos valores." });

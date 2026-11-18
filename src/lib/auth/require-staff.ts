@@ -2,12 +2,13 @@ import { redirect } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 
-export type StaffProfile = { id: string; full_name: string; role: "admin" | "manager" | "staff" };
+export type StaffProfile = { id: string; full_name: string; role: "admin" | "manager" | "staff"; store_id: string };
 
 export type StaffStatus =
   | { state: "anonymous" }
   | { state: "no-profile"; user: User }
   | { state: "inactive"; user: User }
+  | { state: "store-suspended"; user: User }
   | { state: "error"; user: User; message: string }
   | { state: "ok"; user: User; profile: StaffProfile };
 
@@ -19,14 +20,17 @@ export async function getStaffStatus(): Promise<StaffStatus> {
 
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("id, full_name, role, is_active")
+    .select("id, full_name, role, is_active, store_id, stores(is_active)")
     .eq("id", user.id)
     .maybeSingle();
 
   if (error) return { state: "error", user, message: `${error.code ?? ""} ${error.message}`.trim() };
   if (!profile) return { state: "no-profile", user };
   if (!profile.is_active) return { state: "inactive", user };
-  return { state: "ok", user, profile: profile as StaffProfile };
+  // A loja do usuário foi suspensa pela plataforma: o painel fica bloqueado (os dados continuam guardados)
+  const store = (profile as unknown as { stores: { is_active: boolean } | null }).stores;
+  if (store && store.is_active === false) return { state: "store-suspended", user };
+  return { state: "ok", user, profile: { id: profile.id, full_name: profile.full_name, role: profile.role, store_id: profile.store_id } as StaffProfile };
 }
 
 export async function requireStaff(): Promise<StaffProfile> {

@@ -156,3 +156,17 @@
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
 :focus-visible { outline: 2px solid var(--accent, currentColor); outline-offset: 2px; }
+
+/* ---------- Cartões de indicadores responsivos (fora das camadas: prevalece sobre os utilitários) ----------
+   O número se ajusta à largura do cartão; sem suporte a container queries, mantém o tamanho máximo. */
+.adm-fit-box { container-type: inline-size; }
+.adm-fit { white-space: nowrap; font-variant-numeric: tabular-nums; line-height: 1.15; font-size: var(--fit-max, 1.5rem); }
+.adm-kpi-label { font-size: 0.75rem; line-height: 1.2; overflow-wrap: anywhere; }
+@supports (width: 1cqw) {
+  .adm-fit { font-size: min(var(--fit-max, 1.5rem), max(var(--fit-min, 0.8rem), calc(100cqw / (var(--chars, 10) * 0.64)))); }
+  .adm-kpi-label { font-size: clamp(0.625rem, 7.2cqw, 0.75rem); }
+}
+@container (max-width: 11rem) {
+  .adm-kpi-icon { width: 1.75rem; height: 1.75rem; border-radius: 0.6rem; }
+  .adm-kpi-icon svg { width: 0.95rem; height: 0.95rem; }
+}

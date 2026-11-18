@@ -26,11 +26,11 @@ function Badge({ n, className = "" }: { n: number; className?: string }) {
   return <span className={`grid min-w-5 place-items-center rounded-full bg-bad px-1.5 text-[11px] font-bold leading-5 text-white ${className}`}>{n > 99 ? "99+" : n}</span>;
 }
 
-function Brand() {
+function Brand({ name }: { name: string }) {
   return (
-    <span className="flex items-center gap-2.5 font-black tracking-tight">
-      <span className="grid size-8 place-items-center rounded-lg bg-white text-black"><Store size={17} /></span>
-      Painel
+    <span className="flex min-w-0 items-center gap-2.5 font-black tracking-tight">
+      <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white text-black"><Store size={17} /></span>
+      <span className="min-w-0 truncate">{name}</span>
     </span>
   );
 }
@@ -72,8 +72,8 @@ function UserBox({ name, role }: { name: string; role: keyof typeof ROLES }) {
   );
 }
 
-export function AdminShell({ name, role, pending, children }: {
-  name: string; role: keyof typeof ROLES; pending: number; children: React.ReactNode;
+export function AdminShell({ name, role, pending, storeName, children }: {
+  name: string; role: keyof typeof ROLES; pending: number; storeName: string; children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -93,7 +93,7 @@ export function AdminShell({ name, role, pending, children }: {
       {/* Computador: menu lateral fixo */}
       <aside className="sticky top-0 hidden h-dvh flex-col justify-between bg-side p-4 text-white lg:flex">
         <div className="space-y-8">
-          <div className="px-3 pt-2 text-lg text-white"><Brand /></div>
+          <div className="px-3 pt-2 text-lg text-white"><Brand name={storeName} /></div>
           <SideNav pending={pending} />
         </div>
         <div className="space-y-1 border-t border-white/10 pt-3">
@@ -106,7 +106,7 @@ export function AdminShell({ name, role, pending, children }: {
       <div className="flex min-w-0 flex-col">
         {/* Celular/tablet: barra superior */}
         <header className="sticky top-0 z-30 flex items-center justify-between bg-side px-4 py-1.5 pt-[max(0.375rem,env(safe-area-inset-top))] text-white shadow-lg lg:hidden">
-          <Brand />
+          <Brand name={storeName} />
           <AdminThemeToggle variant="icon" />
         </header>
 
@@ -148,7 +148,7 @@ export function AdminShell({ name, role, pending, children }: {
             initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "tween", duration: 0.28, ease: "easeOut" }}>
             <div className="space-y-6">
               <div className="flex items-center justify-between px-1">
-                <Brand />
+                <Brand name={storeName} />
                 <button type="button" aria-label="Fechar menu" onClick={() => setOpen(false)} className="grid size-11 place-items-center rounded-full transition hover:bg-white/10 active:scale-90"><X size={22} /></button>
               </div>
               <SideNav pending={pending} onNavigate={() => setOpen(false)} />

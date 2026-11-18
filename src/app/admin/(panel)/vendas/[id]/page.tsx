@@ -42,7 +42,7 @@ export default async function SaleDetailPage({ params }: { params: Promise<{ id:
   const st = SALE_STATUS[sale.status] ?? { label: sale.status, cls: "bg-surface-2 text-ink" };
   const adj = adjustBadge({ total: Number(sale.total), refunded: Number(sale.refunded_amount), retro: Number(sale.retro_discount_amount), net: Number(sale.net_total) });
   const pct = sale.discount_type === "percent" && sale.discount_percent ? ` (${String(sale.discount_percent).replace(".", ",")}%)` : "";
-  const row = "flex items-baseline justify-between gap-3";
+  const row = "flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1";
 
   return (
     <div className="mx-auto max-w-4xl space-y-5">
@@ -74,7 +74,7 @@ export default async function SaleDetailPage({ params }: { params: Promise<{ id:
         <div className={`${row} border-t border-line pt-2.5`}><span className="font-bold text-ink">Valor cobrado</span><span className="font-bold text-ink">{formatBRL(Number(sale.total))}</span></div>
         <div className={row}><span className="text-muted">Estornos</span><span className="font-semibold text-ink">{Number(sale.refunded_amount) > 0 ? `− ${formatBRL(Number(sale.refunded_amount))}` : formatBRL(0)}</span></div>
         <div className={row}><span className="text-muted">Descontos retroativos</span><span className="font-semibold text-ink">{Number(sale.retro_discount_amount) > 0 ? `− ${formatBRL(Number(sale.retro_discount_amount))}` : formatBRL(0)}</span></div>
-        <div className={`${row} border-t border-line pt-3`}><span className="text-base font-black text-ink">Valor líquido final</span><span className="text-3xl font-black tracking-tight text-ink">{formatBRL(Number(sale.net_total))}</span></div>
+        <div className={`${row} border-t border-line pt-3`}><span className="text-base font-black text-ink">Valor líquido final</span><span className="ml-auto text-3xl font-black tracking-tight text-ink">{formatBRL(Number(sale.net_total))}</span></div>
       </section>
 
       <SaleAdjustmentPanel saleId={sale.id} code={o.code} remaining={Number(sale.net_total)} />

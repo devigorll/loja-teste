@@ -4,6 +4,7 @@ import { useMemo, useState, type CSSProperties } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { formatBRL } from "@/lib/format";
 import type { HistoryRow } from "@/lib/admin/dashboard";
+import { MetricValue } from "@/components/admin/metric-value";
 
 const MONTHS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 const MONTHS_FULL = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
@@ -19,9 +20,9 @@ type Datum = { label: string; full: string; revenue: number; sales: number; colo
 
 function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="rounded-xl border border-line bg-surface-2 p-3.5">
+    <div className="adm-fit-box rounded-xl border border-line bg-surface-2 p-3.5">
       <p className="text-[11px] font-bold uppercase tracking-wide text-muted">{label}</p>
-      <p className="mt-1 text-xl font-black tracking-tight text-ink">{value}</p>
+      <MetricValue text={value} className="mt-1 text-ink [--fit-max:1.25rem]" />
       {sub && <p className="text-xs text-muted">{sub}</p>}
     </div>
   );

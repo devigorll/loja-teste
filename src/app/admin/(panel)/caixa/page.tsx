@@ -5,6 +5,7 @@ import { formatBRL } from "@/lib/format";
 import { dayEnd, dayStart, fmtDateTime, fmtDay, isISODate, monthStart, todayISO } from "@/lib/dates";
 import { ADJUST_KIND_LABEL } from "@/lib/admin/sales";
 import { PageHeader } from "@/components/admin/page-header";
+import { MetricValue } from "@/components/admin/metric-value";
 import { PeriodPresets } from "@/components/admin/period-presets";
 
 export const dynamic = "force-dynamic";
@@ -64,14 +65,14 @@ export default async function CashPage({ searchParams }: { searchParams: Promise
       )}
 
       <section aria-label="Resumo" className="grid gap-4 sm:grid-cols-2">
-        <div className="adm-hero p-5">
+        <div className="adm-hero adm-fit-box p-5">
           <p className="flex items-center gap-2 text-sm font-semibold opacity-90"><Wallet size={16} /> Hoje</p>
-          <p className="mt-2 text-4xl font-black tracking-tight">{formatBRL(Number(sToday?.net ?? 0))}</p>
+          <MetricValue text={formatBRL(Number(sToday?.net ?? 0))} className="mt-2 [--fit-max:2.25rem]" />
           <p className="mt-1 text-sm opacity-90">{sToday?.sales_count ?? 0} vendas</p>
         </div>
-        <div className="adm-hero p-5">
+        <div className="adm-hero adm-fit-box p-5">
           <p className="flex items-center gap-2 text-sm font-semibold opacity-90"><Wallet size={16} /> Este mês</p>
-          <p className="mt-2 text-4xl font-black tracking-tight">{formatBRL(Number(sMonth?.net ?? 0))}</p>
+          <MetricValue text={formatBRL(Number(sMonth?.net ?? 0))} className="mt-2 [--fit-max:2.25rem]" />
           <p className="mt-1 text-sm opacity-90">{sMonth?.sales_count ?? 0} vendas</p>
         </div>
       </section>
@@ -89,11 +90,11 @@ export default async function CashPage({ searchParams }: { searchParams: Promise
         </form>
 
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
-          <div className="adm-card p-4"><p className={lbl}>Saldo</p><p className="mt-2 text-2xl font-black text-ink">{formatBRL(Number(sRange?.net ?? 0))}</p></div>
-          <div className="adm-card p-4"><p className={lbl}>Entradas</p><p className="mt-2 text-2xl font-black text-ink">{formatBRL(Number(sRange?.income ?? 0))}</p></div>
-          <div className="adm-card p-4"><p className={lbl}>Estornos</p><p className="mt-2 text-2xl font-black text-ink">{formatBRL(Number(sRange?.refunds ?? 0))}</p></div>
-          <div className="adm-card p-4"><p className={lbl}>Descontos retroativos</p><p className="mt-2 text-2xl font-black text-ink">{formatBRL(Number(sRange?.retro_discounts ?? 0))}</p></div>
-          <div className="adm-card p-4"><p className={lbl}>Vendas · ticket</p><p className="mt-2 text-2xl font-black text-ink">{sRange?.sales_count ?? 0}</p><p className="text-xs text-muted">{formatBRL(ticket)} em média</p></div>
+          <div className="adm-card adm-fit-box p-4"><p className={lbl}>Saldo</p><MetricValue text={String(formatBRL(Number(sRange?.net ?? 0)))} className="mt-2 [--fit-max:1.5rem] text-ink" /></div>
+          <div className="adm-card adm-fit-box p-4"><p className={lbl}>Entradas</p><MetricValue text={String(formatBRL(Number(sRange?.income ?? 0)))} className="mt-2 [--fit-max:1.5rem] text-ink" /></div>
+          <div className="adm-card adm-fit-box p-4"><p className={lbl}>Estornos</p><MetricValue text={String(formatBRL(Number(sRange?.refunds ?? 0)))} className="mt-2 [--fit-max:1.5rem] text-ink" /></div>
+          <div className="adm-card adm-fit-box p-4"><p className={lbl}>Descontos retroativos</p><MetricValue text={String(formatBRL(Number(sRange?.retro_discounts ?? 0)))} className="mt-2 [--fit-max:1.5rem] text-ink" /></div>
+          <div className="adm-card adm-fit-box p-4"><p className={lbl}>Vendas · ticket</p><MetricValue text={String(sRange?.sales_count ?? 0)} className="mt-2 [--fit-max:1.5rem] text-ink" /><p className="text-xs text-muted">{formatBRL(ticket)} em média</p></div>
         </div>
         <p className="text-xs text-muted">Saldo = entradas − estornos − descontos retroativos. As entradas já têm abatidos os descontos dados na confirmação das vendas ({formatBRL(Number(sRange?.sale_discounts ?? 0))} no período). Os lançamentos entram na data em que foram feitos.</p>
       </section>
@@ -102,9 +103,9 @@ export default async function CashPage({ searchParams }: { searchParams: Promise
         <h2 className="text-lg font-bold text-ink">Por forma de pagamento</h2>
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
           {[...byMethod.entries()].map(([name, v]) => (
-            <div key={name} className="adm-card p-4">
+            <div key={name} className="adm-card adm-fit-box p-4">
               <p className={lbl}>{name}</p>
-              <p className="mt-2 text-2xl font-black text-ink">{formatBRL(v.total)}</p>
+              <MetricValue text={String(formatBRL(v.total))} className="mt-2 [--fit-max:1.5rem] text-ink" />
               <p className="text-xs text-muted">{v.count} {v.count === 1 ? "venda" : "vendas"}</p>
             </div>
           ))}

@@ -1,4 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
+import { getCurrentStore } from "@/lib/store-context";
 
 import { basePrice, type BadgeKind } from "@/lib/product-utils";
 export { basePrice, totalStock, isSoldOut, mainImage } from "@/lib/product-utils";
@@ -16,6 +17,7 @@ export type Product = {
   badge?: BadgeKind | null; // selo efetivo (manual do administrador ou automático)
 };
 export type Store = {
+  store_id: string;
   name: string; logo_url: string | null; description: string | null; phone: string | null;
   whatsapp: string | null; address: string | null; social_links: Record<string, string>;
   opening_hours: Record<string, string>; delivery_info: string | null; pickup_info: string | null;
@@ -29,30 +31,34 @@ const SELECT =
   "id,name,slug,description,price,promo_price,is_featured,created_at,categories(name,slug),product_images(url,alt,position),product_variants(id,size,color,color_hex,stock,price_override,is_active)";
 
 /** Selos efetivos por produto (função do banco: respeita o selo manual e aplica as regras automáticas). */
-async function getBadgeMap(supabase: Awaited<ReturnType<typeof createClient>>) {
-  const { data } = await supabase.rpc("get_product_badges");
+async function getBadgeMap(supabase: ReturnType<typeof createPublicClient>, storeId: string) {
+  const { data } = await supabase.rpc("get_product_badges", { p_store_id: storeId });
   const map = new Map<string, BadgeKind>();
   ((data ?? []) as { product_id: string; badge: BadgeKind | null }[]).forEach((r) => { if (r.badge) map.set(r.product_id, r.badge); });
   return map;
 }
 
 export async function getStore(): Promise<Store> {
-  const supabase = await createClient();
-  const { data } = await supabase.from("store_settings").select("*").eq("id", 1).single();
-  return (data ?? { name: "Loja", social_links: {}, opening_hours: {} }) as Store;
+  const current = await getCurrentStore();
+  if (!current) return { store_id: "", name: "Loja", social_links: {}, opening_hours: {} } as unknown as Store;
+  const { data } = await createPublicClient().from("store_settings").select("*").eq("store_id", current.id).maybeSingle();
+  return { ...(data ?? { name: current.name, social_links: {}, opening_hours: {} }), store_id: current.id } as Store;
 }
 
 export async function getCategories() {
-  const supabase = await createClient();
-  const { data } = await supabase.from("categories").select("id,name,slug").order("position");
+  const current = await getCurrentStore();
+  if (!current) return [];
+  const { data } = await createPublicClient().from("categories").select("id,name,slug").eq("store_id", current.id).order("position");
   return data ?? [];
 }
 
 export async function getProducts(f: Filters = {}): Promise<Product[]> {
-  const supabase = await createClient();
-  let query = supabase.from("products").select(SELECT).order("created_at", { ascending: false });
+  const current = await getCurrentStore();
+  if (!current) return [];
+  const supabase = createPublicClient();
+  let query = supabase.from("products").select(SELECT).eq("store_id", current.id).order("created_at", { ascending: false });
   if (f.q) query = query.ilike("name", `%${f.q.replace(/[%,]/g, " ")}%`);
-  const [{ data }, badges] = await Promise.all([query, getBadgeMap(supabase)]);
+  const [{ data }, badges] = await Promise.all([query, getBadgeMap(supabase, current.id)]);
   let list = ((data ?? []) as unknown as Product[]).map((p) => ({ ...p, badge: badges.get(p.id) ?? null }));
 
   if (f.categoria) list = list.filter((p) => p.categories?.slug === f.categoria);
@@ -68,8 +74,13 @@ export async function getProducts(f: Filters = {}): Promise<Product[]> {
 }
 
 export async function getProductBySlug(slug: string) {
-  const supabase = await createClient();
-  const [{ data }, badges] = await Promise.all([supabase.from("products").select(SELECT).eq("slug", slug).maybeSingle(), getBadgeMap(supabase)]);
+  const current = await getCurrentStore();
+  if (!current) return null;
+  const supabase = createPublicClient();
+  const [{ data }, badges] = await Promise.all([
+    supabase.from("products").select(SELECT).eq("store_id", current.id).eq("slug", slug).maybeSingle(),
+    getBadgeMap(supabase, current.id),
+  ]);
   if (!data) return null;
   const p = data as unknown as Product;
   return { ...p, badge: badges.get(p.id) ?? null } as Product;
