@@ -1,25 +1,18 @@
-import { Header } from "@/components/shop/header";
-import { Footer } from "@/components/shop/footer";
-import { getCategories, getStore } from "@/lib/catalog";
-import { getCurrentStore } from "@/lib/store-context";
+import type { Metadata } from "next";
+import { Archivo } from "next/font/google";
+import "./globals.css";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 
-export default async function PublicLayout({ children }: { children: React.ReactNode }) {
-  if (!(await getCurrentStore())) {
-    return (
-      <main className="grid min-h-dvh place-items-center p-6 text-center">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight">Loja não encontrada</h1>
-          <p className="mt-2 max-w-sm text-neutral-500">Este endereço não está associado a nenhuma loja ativa.</p>
-        </div>
-      </main>
-    );
-  }
-  const [store, categories] = await Promise.all([getStore(), getCategories()]);
+const font = Archivo({ subsets: ["latin"], variable: "--font-archivo", axes: ["wdth"] });
+
+export const metadata: Metadata = { title: "Vértice Urban", description: "Catálogo digital" };
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      <Header storeName={store.name} categories={categories} />
-      <main>{children}</main>
-      <Footer store={store} />
-    </>
+    <html lang="pt-BR" suppressHydrationWarning>
+      <body className={`${font.variable} font-sans antialiased bg-white text-neutral-950 dark:bg-neutral-950 dark:text-neutral-100`}>
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
+    </html>
   );
 }
